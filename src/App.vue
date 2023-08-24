@@ -1,11 +1,11 @@
 <template>
-  <div class="flex flex-row w-full">
-    <div class="w-1/2 h-screen overflow-hidden bg-slate-100">
+  <div class="flex flex-row w-full overflow-hidden">
+    <div class="w-1/2 h-screen overflow-hidden bg-slate-100 relative">
       <div class="flex items center w-full h-[200px] justify-center"><div class="max-w-[250px]"><img :src="logo"/></div></div>
       <SpriteDropArea v-model="droppedSprite" v-model:weapon="weaponSprite" />
     </div>
-    <div class="w-1/2">
-      <div class="absolute bottom-0 z-0 w-full"><div class="w-full opacity-5"><img class="object-cover w-1/2" :src="bg"/></div></div>
+    <div class="w-1/2 relative">
+      <div class="absolute bottom-0 z-0 w-full"><div class="w-full opacity-5"><img class="object-cover w-full" :src="bg"/></div></div>
       <SpritePreviewArea v-if="!syncing" :sprite="droppedSprite" :weapon-sprite="weaponSprite" class="z-1"/>
     </div>
   </div>

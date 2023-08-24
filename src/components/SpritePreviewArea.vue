@@ -60,8 +60,8 @@
           <n-select v-model:value="selectedAnimation" :options="animationOptions" label-field="label" />
           <div class="w-full h-full flex justify-center items-center">
             <div class="flex relative pointer-events-none">
-              <Sprite class="absolute top-0 left-0" v-if="sprite" :sprite="sprite" :size="32" :zoom="3 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" />
-              <Sprite class="absolute top-0 left-0" v-if="weaponSprite && showWeapon" :sprite="weaponSprite" :offset-factor="0.5" :size="48" :zoom="3 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" />
+              <Sprite class="absolute top-0 left-0" v-if="sprite" :sprite="sprite" :size="32" :zoom="3 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" :flipped="animations[selectedAnimation].flipped" />
+              <Sprite class="absolute top-0 left-0" v-if="weaponSprite && showWeapon" :sprite="weaponSprite" :offset-factor="0.5" :size="48" :zoom="3 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" :flipped="animations[selectedAnimation].flipped"  />
             </div>
           </div>
         </div>
@@ -71,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
 import Sprite from "./Sprite.vue";
 
 import GridOutline from '@vicons/ionicons5/GridOutline'
@@ -90,6 +90,9 @@ const animationOptions = [
   { label: "Attack down", value: 'atk_down' },
   { label: "Walk down", value: 'wlk_down' },
   { label: "Idle down", value: 'idl_down' },
+  { label: "Attack left", value: 'atk_left' },
+  { label: "Walk left", value: 'wlk_left' },
+  { label: "Idle left", value: 'idl_left' },
 ]
 
 const animations = {
@@ -102,7 +105,46 @@ const animations = {
   atk_down: { row: 6, speed: 200, frames: 5},
   wlk_down: { row: 7, speed: 250, frames: 4},
   idl_down: { row: 8, speed: 500, frames: 2},
+  atk_left: { row: 0, speed: 200, frames: 5, flipped: true},
+  wlk_left: { row: 1, speed: 250, frames: 4, flipped: true},
+  idl_left: { row: 2, speed: 500, frames: 2, flipped: true},
 }
+
+// Add keyboard listeners to trigger animations
+onMounted(() => {
+  window.addEventListener('keydown', (e) => {
+    if(e.key === 'ArrowRight') {
+      selectedAnimation.value = 'wlk_right'
+    } else if(e.key === 'ArrowLeft') {
+      selectedAnimation.value = 'wlk_left'
+    } else if(e.key === 'ArrowUp') {
+      selectedAnimation.value = 'wlk_up'
+    } else if(e.key === 'ArrowDown') {
+      selectedAnimation.value = 'wlk_down'
+    }
+
+    // Add awsd
+    if(e.key === 'd') {
+      selectedAnimation.value = 'wlk_right'
+    } else if(e.key === 'a') {
+      selectedAnimation.value = 'wlk_left'
+    } else if(e.key === 'w') {
+      selectedAnimation.value = 'wlk_up'
+    } else if(e.key === 's') {
+      selectedAnimation.value = 'wlk_down'
+    }
+
+    // Add spacebar to trigger attack for current direction
+    if(e.key === ' ') {
+      selectedAnimation.value = selectedAnimation.value.replace('wlk', 'atk')
+    }
+
+    // Add esc and enter to trigger idle in current direction
+    if(e.key === 'Enter' || e.key === 'Escape') {
+      selectedAnimation.value = selectedAnimation.value.replace('atk', 'idl')
+    }
+  })
+})
 
 const gridMode = ref(false);
 const selectedAnimation = ref('atk_right');

@@ -1,5 +1,7 @@
 <template>
-  <div class="flex items-center justify-center" :style="containerStyle"><div class="sprite" :style="style"/></div>
+  <div class="flex items-center justify-center" :class="{'-scale-x-100' : flipped }" :style="containerStyle">
+    <div class="sprite" :style="style"/>
+  </div>
 </template>
 
 <script setup>
@@ -9,10 +11,11 @@ const props = defineProps({
   sprite: {type: String, required: true},
   size: {type: Number, required: true},
   zoom: {type: Number, required: true},
-  row: {type:Number, required: true},
+  row: {type: Number, required: true},
   speed: {type: Number, required: true},
   frames: {type: Number, required: true},
-  offsetFactor: {type: Number, required: null}
+  offsetFactor: {type: Number, required: null},
+  flipped: {type: Boolean, required: null, default: false}
 });
 
 const frame = ref(0);
@@ -36,7 +39,7 @@ const containerStyle = computed(() => {
     height: (props.size * props.zoom) + 'px',
   };
 
-  if(props.offsetFactor) {
+  if (props.offsetFactor) {
     style.top = '-' + props.offsetFactor * props.size * props.zoom + 'px';
     style.left = '-' + props.offsetFactor * props.size * props.zoom + 'px';
   }
@@ -48,8 +51,8 @@ onMounted(() => {
   }, props.speed);
 });
 
-watch(() => props.speed, function() {
-  if(interval) {
+watch(() => props.speed, function () {
+  if (interval) {
     clearInterval(interval);
   }
 
@@ -62,13 +65,13 @@ watch(() => props.speed, function() {
 
 <style scoped>
 .sprite {
-    image-rendering: optimizeSpeed;             /* STOP SMOOTHING, GIVE ME SPEED  */
-    image-rendering: -moz-crisp-edges;          /* Firefox                        */
-    image-rendering: -o-crisp-edges;            /* Opera                          */
-    image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
-    image-rendering: pixelated;                 /* Universal support since 2021   */
-    image-rendering: optimize-contrast;         /* CSS3 Proposed                  */
-    -ms-interpolation-mode: nearest-neighbor;   /* IE8+                           */
+  image-rendering: optimizeSpeed; /* STOP SMOOTHING, GIVE ME SPEED  */
+  image-rendering: -moz-crisp-edges; /* Firefox                        */
+  image-rendering: -o-crisp-edges; /* Opera                          */
+  image-rendering: -webkit-optimize-contrast; /* Chrome (and eventually Safari) */
+  image-rendering: pixelated; /* Universal support since 2021   */
+  image-rendering: optimize-contrast; /* CSS3 Proposed                  */
+  -ms-interpolation-mode: nearest-neighbor; /* IE8+                           */
 
 }
 </style>
