@@ -11,7 +11,8 @@ const props = defineProps({
   zoom: {type: Number, required: true},
   row: {type:Number, required: true},
   speed: {type: Number, required: true},
-  frames: {type: Number, required: true}
+  frames: {type: Number, required: true},
+  offsetFactor: {type: Number, required: null}
 });
 
 const frame = ref(0);
@@ -30,9 +31,14 @@ const style = computed(() => {
 })
 
 const containerStyle = computed(() => {
-  return {
+  let style = {
     width: (props.size * props.zoom) + 'px',
     height: (props.size * props.zoom) + 'px',
+  };
+
+  if(props.offsetFactor) {
+    style.top = '-' + props.offsetFactor * props.size * props.zoom + 'px';
+    style.left = '-' + props.offsetFactor * props.size * props.zoom + 'px';
   }
 })
 

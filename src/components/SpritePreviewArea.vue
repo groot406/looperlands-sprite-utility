@@ -44,23 +44,25 @@
           <div class="flex items-center justify-center"><Sprite :sprite="sprite" :size="32" :zoom="zoom" row=8 speed=500 frames=2 /></div>
         </div>
         <div class="grid grid-cols-3 absolute w-full h-full" v-if="showWeapon">
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=0 speed=200 frames=5 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=1 speed=250 frames=4 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=2 speed=500 frames=2 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=3 speed=200 frames=5 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=4 speed=250 frames=4 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=5 speed=500 frames=2 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=6 speed=200 frames=5 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=7 speed=250 frames=4 /></div>
-          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom*(2/3)" row=8 speed=500 frames=2 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=0 speed=200 frames=5 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=1 speed=250 frames=4 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=2 speed=500 frames=2 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=3 speed=200 frames=5 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=4 speed=250 frames=4 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=5 speed=500 frames=2 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=6 speed=200 frames=5 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=7 speed=250 frames=4 /></div>
+          <div class="flex items-center justify-center"><Sprite :sprite="weaponSprite" :size="48" :zoom="zoom" :offset-factor="0.5" row=8 speed=500 frames=2 /></div>
         </div>
       </div>
       <div v-else class="h-full">
-        <div class="relative flex h-full flex-col items-center justify-center">
+        <div class="relative flex h-full flex-col items-center justify-center w-full">
           <n-select v-model:value="selectedAnimation" :options="animationOptions" label-field="label" />
-          <div class="mt-10 flex relative w-full h-full pointer-events-none">
-            <Sprite class="absolute top-0 left-0" v-if="sprite" :sprite="sprite" :size="32" :zoom="3 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" />
-            <Sprite class="absolute top-0 left-0" v-if="weaponSprite && showWeapon" :sprite="weaponSprite" :size="48" :zoom="2 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" />
+          <div class="w-full h-full flex justify-center items-center">
+            <div class="flex relative pointer-events-none">
+              <Sprite class="absolute top-0 left-0" v-if="sprite" :sprite="sprite" :size="32" :zoom="3 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" />
+              <Sprite class="absolute top-0 left-0" v-if="weaponSprite && showWeapon" :sprite="weaponSprite" :offset-factor="0.5" :size="48" :zoom="3 * zoom" :row="animations[selectedAnimation].row" :speed="animations[selectedAnimation].speed" :frames="animations[selectedAnimation].frames" />
+            </div>
           </div>
         </div>
       </div>
