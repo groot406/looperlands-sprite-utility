@@ -61,6 +61,9 @@ watch(() => props.speed, function () {
   }, props.speed);
 })
 
+watch(() => props.row, function () {
+  frame.value = 0;
+})
 </script>
 
 <style scoped>
