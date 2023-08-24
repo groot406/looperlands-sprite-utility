@@ -1,7 +1,28 @@
-# Vue 3 + Vite
+# Looperlands Sprite utility
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+## Install
+    To install the dependencies run:
+    ```bash
+    npm install
+    ```
+## Running
+    To run the project run:
+    ```bash
+    vite dev
+    ```
 
-## Recommended IDE Setup
+## To build the project run:
+    ```bash
+    vite build
+    ```
+    The build will be in the dist folder
 
-- [VS Code](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur) + [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
+# Using the application
+
+Once the application runs, you can load the sprite-sheets you want.
+You can either click on the areas or drag and drop the files.
+
+## Keyboard navigation
+You can use `w` `a` `s` `d` or **arrow keys** to control the animations
+
+Use `space` to trigger the attack animation
