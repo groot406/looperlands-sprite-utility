@@ -1,21 +1,21 @@
 # Looperlands Sprite utility
 
 ## Install
-    To install the dependencies run:
-    ```bash
-    npm install
-    ```
+To install the dependencies run:
+```bash
+npm install
+```
 ## Running
-    To run the project run:
-    ```bash
-    vite dev
-    ```
+To run the project run:
+```bash
+vite dev
+```
 
 ## To build the project run:
-    ```bash
-    vite build
-    ```
-    The build will be in the dist folder
+```bash
+vite build
+```
+The build will be in the dist folder
 
 # Using the application
 
