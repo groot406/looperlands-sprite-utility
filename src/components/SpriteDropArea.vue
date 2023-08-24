@@ -65,7 +65,7 @@ function onWeaponFileChange(fileList) {
   if (!fileList.length)
     return;
 
-  createWeaponImage(fileList[0]);
+  createWeaponImage(fileList[fileList.length - 1]);
 }
 </script>
 
