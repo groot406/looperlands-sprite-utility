@@ -81,13 +81,13 @@ defineProps(['sprite', 'weaponSprite'])
 const animationOptions = [
   { label: "Attack right", value: 'atk_right' },
   { label: "Walk right", value: 'wlk_right' },
-  { label: "Idl right", value: 'idl_right' },
+  { label: "Idle right", value: 'idl_right' },
   { label: "Attack up", value: 'atk_up' },
   { label: "Walk up", value: 'wlk_up' },
-  { label: "Idl up", value: 'idl_up' },
+  { label: "Idle up", value: 'idl_up' },
   { label: "Attack down", value: 'atk_down' },
   { label: "Walk down", value: 'wlk_down' },
-  { label: "Idl down", value: 'idl_down' },
+  { label: "Idle down", value: 'idl_down' },
 ]
 
 const animations = {

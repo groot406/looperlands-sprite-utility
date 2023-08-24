@@ -5,7 +5,7 @@
       <SpriteDropArea v-model="droppedSprite" v-model:weapon="weaponSprite" />
     </div>
     <div class="w-1/2">
-      <div class="absolute bottom-0 z-0"><div class="w-full opacity-5"><img :src="bg"/></div></div>
+      <div class="absolute bottom-0 z-0 w-full"><div class="w-full opacity-5"><img class="object-cover w-1/2" :src="bg"/></div></div>
       <SpritePreviewArea v-if="!syncing" :sprite="droppedSprite" :weapon-sprite="weaponSprite" class="z-1"/>
     </div>
   </div>
