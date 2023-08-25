@@ -7,7 +7,7 @@
         </NUploadDragger>
       </NUpload>
       <div class="flex flex-col gap-y-2 w-full text-left mb-6 max-h-[20vh] overflow-y-auto">
-        <div v-for="(sprite, idx) in spriteFiles" class="flex flex-row p-2 border bg-slate-50 cursor-pointer" :class="{ 'hover:bg-slate-200': !(activeSprite === idx), 'bg-slate-700 text-white': activeSprite === idx }" @click="selectSprite(idx)">
+        <div v-for="(sprite, idx) in spriteFiles" class="flex rounded flex-row p-2 border bg-slate-50 cursor-pointer" :class="{ 'hover:bg-slate-200': !(activeSprite === idx), 'bg-slate-700 text-white': activeSprite === idx }" @click="selectSprite(idx)">
             <div class="flex-grow">{{ sprite.name }}</div>
           <div><n-icon :component="TrashCan" class="opacity-50 hover:opacity-100" @click.stop="removeFile(idx)"/></div>
         </div>
@@ -20,7 +20,7 @@
         </NUploadDragger>
       </NUpload>
       <div class="flex flex-col gap-y-2 w-full text-left mb-6 max-h-[20vh] overflow-y-auto">
-        <div v-for="(sprite, idx) in weaponSpriteFiles" class="flex flex-row p-2 border bg-slate-50 cursor-pointer" :class="{ 'hover:bg-slate-200': !(activeWeaponSprite === idx), 'bg-slate-700 text-white': activeWeaponSprite === idx }" @click="selectWeaponSprite(idx)">
+        <div v-for="(sprite, idx) in weaponSpriteFiles" class="flex rounded flex-row p-2 border bg-slate-50 cursor-pointer" :class="{ 'hover:bg-slate-200': !(activeWeaponSprite === idx), 'bg-slate-700 text-white': activeWeaponSprite === idx }" @click="selectWeaponSprite(idx)">
           <div class="flex-grow">{{ sprite.name }}</div>
           <div><n-icon :component="TrashCan" class="opacity-50 hover:opacity-100" @click.stop="removeWeaponFile(idx)"/></div>
         </div>
