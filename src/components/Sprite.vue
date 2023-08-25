@@ -14,12 +14,15 @@ const props = defineProps({
   row: {type: Number, required: true},
   speed: {type: Number, required: true},
   frames: {type: Number, required: true},
-  offsetFactor: {type: Number, required: null},
-  flipped: {type: Boolean, required: null, default: false}
+  offsetX: {type: Number, required: null},
+  offsetY: {type: Number, required: null},
+  flipped: {type: Boolean, required: null, default: false},
+  cooldown: {type: Number, required: null}
 });
 
 const frame = ref(0);
 let interval = null;
+let coolDownInProgress = ref(false);
 
 const style = computed(() => {
   return {
@@ -39,30 +42,51 @@ const containerStyle = computed(() => {
     height: (props.size * props.zoom) + 'px',
   };
 
-  if (props.offsetFactor) {
-    style.top = '-' + props.offsetFactor * props.size * props.zoom + 'px';
-    style.left = '-' + props.offsetFactor * props.size * props.zoom + 'px';
+  if (props.offsetX) {
+    style.top = '-' + (props.size - props.offsetX) * props.zoom + 'px';
+  }
+  if (props.offsetY) {
+    style.left = '-' + (props.size - props.offsetY) * props.zoom + 'px';
   }
 })
 
-onMounted(() => {
-  interval = setInterval(() => {
-    frame.value = (frame.value + 1) % props.frames;
-  }, props.speed);
-});
+onMounted(startAnimation);
 
 watch(() => props.speed, function () {
+  startAnimation();
+})
+
+watch(() => props.row, function () {
+  frame.value = 0;
+})
+
+function startAnimation() {
   if (interval) {
     clearInterval(interval);
   }
 
   interval = setInterval(() => {
+    if (coolDownInProgress.value === true) {
+      return;
+    }
+
     frame.value = (frame.value + 1) % props.frames;
   }, props.speed);
-})
+}
 
-watch(() => props.row, function () {
-  frame.value = 0;
+let cooldownTimeout;
+watch(frame, () => {
+  if (frame.value === 0 && props.cooldown && coolDownInProgress.value === false) {
+    coolDownInProgress.value = true;
+    if(cooldownTimeout) {
+      clearTimeout(cooldownTimeout);
+    }
+    cooldownTimeout = setTimeout(() => {
+      coolDownInProgress.value = false;
+    }, props.cooldown)
+  } else if(!props.cooldown) {
+    coolDownInProgress.value = false;
+  }
 })
 </script>
 

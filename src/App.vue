@@ -28,7 +28,7 @@ watch([droppedSprite, weaponSprite], (value) => {
     syncing.value = true;
     setTimeout(() => {
       syncing.value = false;
-    }, 100);
+    }, 1);
   }
 })
 </script>
