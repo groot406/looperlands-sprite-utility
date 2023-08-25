@@ -14,7 +14,7 @@
       </div>
     </div>
     <div class="flex flex-col">
-      <NUpload @update:file-list="onWeaponFileChange" :show-file-list="false" multiple>
+      <NUpload @update:file-list="onWeaponFileChange" :show-file-list="false" multiple class="mt-10 mb-2">
         <NUploadDragger>
           Drop your <b>weapon</b> sprite here. Use the 100% version.
         </NUploadDragger>
