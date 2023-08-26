@@ -41,7 +41,7 @@
       <div class="text-4xl w-full text-center text-slate-400 mt-40">No spite was uploaded yet</div>
     </template>
     <template v-else>
-      <div v-if="gridMode === true" class="relative w-full h-full -top-10 pointer-events-none">
+      <div v-if="gridMode === true" class="relative w-full h-full -top-10 pointer-events-none" id="preview">
         <div class="grid grid-cols-3 absolute w-full h-full">
           <template v-for="(animation, key) in animations">
             <div class="flex items-center justify-center">
@@ -68,7 +68,7 @@
       <div v-else class="h-full">
         <div class="relative flex h-full flex-col items-center justify-center w-full">
           <n-select v-model:value="selectedAnimation" :options="animationOptions" label-field="label"/>
-          <div class="relative w-full h-full -top-10 pointer-events-none">
+          <div class="relative w-full h-full -top-10 pointer-events-none" id="preview">
             <div class="grid grid-cols-1 absolute w-full h-full">
               <div class="flex items-center justify-center">
                 <Sprite v-if="sprite" :sprite="sprite" :size="32" :zoom="3 * zoom"
@@ -183,5 +183,6 @@ const gridMode = ref(false);
 const selectedAnimation = ref('idl_down');
 const zoom = ref(3)
 const showWeapon = ref(true)
+
 </script>
 
