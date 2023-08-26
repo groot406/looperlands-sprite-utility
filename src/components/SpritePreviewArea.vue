@@ -48,7 +48,8 @@
               <Sprite :key="key" v-if="sprite" :sprite="sprite" :size="32" :zoom="zoom"
                       :row="animation.row" :speed="slowMode ? animation.slowSpeed : animation.speed"
                       :frames="animation.frames" :flipped="animation.flipped"
-                      :cooldown="animation.cooldown"/>
+                      :cooldown="animation.cooldown"
+              />
             </div>
           </template>
         </div>
@@ -60,7 +61,8 @@
                       :size="48" :zoom="zoom" :row="animation.row"
                       :speed="slowMode ? animation.slowSpeed : animation.speed" :frames="animation.frames"
                       :flipped="animation.flipped"
-                      :cooldown="animation.cooldown"/>
+                      :cooldown="animation.cooldown"
+              />
             </div>
           </template>
         </div>
@@ -75,7 +77,8 @@
                         :row="animations[selectedAnimation].row"
                         :speed="slowMode ? animations[selectedAnimation].slowSpeed : animations[selectedAnimation].speed"
                         :frames="animations[selectedAnimation].frames" :flipped="animations[selectedAnimation].flipped"
-                        :cooldown="animations[selectedAnimation].cooldown"/>
+                        :cooldown="animations[selectedAnimation].cooldown"
+                />
               </div>
             </div>
             <div class="grid grid-cols-1 absolute w-full h-full" v-if="showWeapon">
@@ -85,7 +88,8 @@
                         :speed="slowMode ? animations[selectedAnimation].slowSpeed : animations[selectedAnimation].speed"
                         :frames="animations[selectedAnimation].frames"
                         :flipped="animations[selectedAnimation].flipped"
-                        :cooldown="animations[selectedAnimation].cooldown"/>
+                        :cooldown="animations[selectedAnimation].cooldown"
+                />
               </div>
             </div>
           </div>
@@ -96,7 +100,7 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from 'vue'
+import {onMounted, ref, watch} from 'vue'
 import Sprite from "./Sprite.vue";
 
 import GridOutline from '@vicons/ionicons5/GridOutline'
@@ -105,10 +109,10 @@ import Cross from '@vicons/tabler/Cross'
 import AnimalRabbit20Regular from '@vicons/fluent/AnimalRabbit20Regular'
 import AnimalTurtle20Regular from '@vicons/fluent/AnimalTurtle20Regular'
 
-defineProps(['sprite', 'weaponSprite'])
+const props = defineProps(['sprite', 'weaponSprite'])
+const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon', 'update:slowMode'])
 
 const slowMode = ref(false);
-
 const animationOptions = [
   {label: "Attack right", value: 'atk_right'},
   {label: "Walk right", value: 'wlk_right'},
@@ -183,6 +187,22 @@ const gridMode = ref(false);
 const selectedAnimation = ref('idl_down');
 const zoom = ref(3)
 const showWeapon = ref(true)
+
+watch(selectedAnimation, (value) => {
+  emit('update:animation', animations[value]);
+}, { immediate: true})
+
+watch(zoom, (value) => {
+  emit('update:zoom', value);
+}, { immediate: true})
+
+watch(showWeapon, (value) => {
+  emit('update:showWeapon', value);
+}, { immediate: true})
+
+watch(slowMode, (value) => {
+  emit('update:slowMode', value);
+}, { immediate: true})
 
 </script>
 

@@ -17,10 +17,11 @@ const props = defineProps({
   offsetX: {type: Number, required: null},
   offsetY: {type: Number, required: null},
   flipped: {type: Boolean, required: null, default: false},
-  cooldown: {type: Number, required: null}
+  cooldown: {type: Number, required: null},
+  fixedFrame: {type: Number, required: null, default: null}
 });
 
-const frame = ref(0);
+const frame = ref(props.fixedFrame || 0);
 let interval = null;
 let coolDownInProgress = ref(false);
 
@@ -53,16 +54,27 @@ const containerStyle = computed(() => {
 onMounted(startAnimation);
 
 watch(() => props.speed, function () {
-  startAnimation();
+    startAnimation();
 })
 
 watch(() => props.row, function () {
-  frame.value = 0;
+  frame.value = props.fixedFrame || 0;
+})
+
+watch(() => props.fixedFrame, function () {
+  frame.value = props.fixedFrame || 0;
+  if (props.fixedFrame !== null) {
+    clearInterval(interval);
+  }
 })
 
 function startAnimation() {
   if (interval) {
     clearInterval(interval);
+  }
+
+  if(props.fixedFrame !== null) {
+    return;
   }
 
   interval = setInterval(() => {
@@ -75,6 +87,7 @@ function startAnimation() {
 }
 
 let cooldownTimeout;
+
 watch(frame, () => {
   if (frame.value === 0 && props.cooldown && coolDownInProgress.value === false) {
     coolDownInProgress.value = true;
