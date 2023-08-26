@@ -110,7 +110,7 @@ import AnimalRabbit20Regular from '@vicons/fluent/AnimalRabbit20Regular'
 import AnimalTurtle20Regular from '@vicons/fluent/AnimalTurtle20Regular'
 
 const props = defineProps(['sprite', 'weaponSprite'])
-const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon', 'update:slowMode'])
+const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon', 'update:slowMode', 'update:gridMode'])
 
 const slowMode = ref(false);
 const animationOptions = [
@@ -202,6 +202,10 @@ watch(showWeapon, (value) => {
 
 watch(slowMode, (value) => {
   emit('update:slowMode', value);
+}, { immediate: true})
+
+watch(gridMode, (value) => {
+  emit('update:gridMode', value);
 }, { immediate: true})
 
 </script>

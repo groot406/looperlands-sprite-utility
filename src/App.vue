@@ -10,7 +10,7 @@
       <div class="absolute bottom-0 z-0 w-full">
         <div class="w-full opacity-5"><img class="object-cover w-full" :src="bg"/></div>
       </div>
-      <SpritePreviewArea v-if="!syncing" :sprite="droppedSprite" :weapon-sprite="weaponSprite" class="z-1"  @update:animation="setCurrentAnimation" @update:zoom="setCurrentZoom" @update:showWeapon="setShowWeapon" @update:slowMode="setSlowMode"/>
+      <SpritePreviewArea v-if="!syncing" :sprite="droppedSprite" :weapon-sprite="weaponSprite" class="z-1"  @update:animation="setCurrentAnimation" @update:zoom="setCurrentZoom" @update:showWeapon="setShowWeapon" @update:slowMode="setSlowMode" @update:grid-mode="setGridMode"/>
     </div>
   </div>
   <div class="absolute bottom-4 right-4 flex gap-x-2" v-if="droppedSprite || weaponSprite">
@@ -22,7 +22,7 @@
         class="p-1 border rounded-full px-4 text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
         @click="downloadPng">Save as Png
     </div>
-    <div
+    <div v-if="!gridMode"
         class="p-1 border flex items-center gap-x-2 rounded-full text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
         :class="{'px-4': !exportingGifTotal, 'px-2': exportingGifTotal }"
         @click="downloadGif"><div v-if="exportingGifTotal" class="animate-spin w-[12px] h-[12px]"><n-icon  class="animate-spin" :component="SpinnerIos20Filled" /></div>Save as Gif
@@ -115,6 +115,8 @@ const currentAnimation = ref(null);
 const currentZoom = ref(null);
 const showWeapon = ref(null);
 const slowMode = ref(null);
+const gridMode = ref(null);
+
 const exportingGif = ref(false);
 const exportingGifTotal = ref(false);
 
@@ -158,6 +160,10 @@ function setShowWeapon(show) {
 
 function setSlowMode(slow) {
   slowMode.value = slow;
+}
+
+function setGridMode(grid) {
+  gridMode.value = grid;
 }
 
 function exportZip() {
