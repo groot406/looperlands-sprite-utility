@@ -167,10 +167,13 @@ function setGridMode(grid) {
 }
 
 function exportZip() {
-  if (!droppedSprite.value && !weaponSprite.value) return;
+  if (!droppedSprite.value && !weaponSprite.value) {
+    return;
+  }
+
   exporting.value = true;
 
-  nextTick(() => {
+  setTimeout(() => {
     let exportedImages = 0;
     let exportTarget = (droppedSprite.value && weaponSprite.value) ? 8 : 4;
     let file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker;
@@ -182,7 +185,7 @@ function exportZip() {
             exportedImages++;
             file1 = blob;
             if (exportedImages === exportTarget)
-              generateZip(file1, file2, file3, weaponFile1, weaponFile2, weaponFile3);
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
           });
 
       htmlToImage.toBlob(document.getElementById('export_character_2'))
@@ -191,7 +194,7 @@ function exportZip() {
             file2 = blob;
             if (exportedImages === exportTarget) {
               exporting.value = false;
-              generateZip(file1, file2, file3, weaponFile1, weaponFile2, weaponFile3);
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
             }
           });
 
@@ -201,7 +204,7 @@ function exportZip() {
             file3 = blob;
             if (exportedImages === exportTarget) {
               exporting.value = false;
-              generateZip(file1, file2, file3, weaponFile1, weaponFile2, weaponFile3);
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
             }
           });
 
@@ -257,7 +260,7 @@ function exportZip() {
             }
           });
     }
-  })
+  }, 100);
 }
 
 function generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker) {
@@ -310,7 +313,7 @@ function downloadGif() {
   let speed = slowMode.value ? currentAnimation.value.slowSpeed : currentAnimation.value.speed;
   for(var i=0; i < currentAnimation.value.frames; i++) {
     let frame = i;
-    setTimeout(() => { exportFrame.value = frame; }, i * 200);
+    setTimeout(() => { exportFrame.value = frame; }, (i * 200) + 50);
     setTimeout(() => { addFrame(speed) }, (i*200) + 150);
   }
   if(currentAnimation.value.cooldown) {
