@@ -231,10 +231,12 @@ function nextSubAnimation() {
 }
 
 function setNextFrame() {
+  autoPlay.value = false;
   previewFrame.value = (previewFrame.value + 1) % animation.value.frames;
 }
 
 function setPreviousFrame() {
+  autoPlay.value = false;
   previewFrame.value = (previewFrame.value - 1) % animation.value.frames;
   if(previewFrame.value < 0) {
     previewFrame.value = animation.value.frames - 1;

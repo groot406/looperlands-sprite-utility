@@ -118,4 +118,8 @@ watch(() => props.autoplay, function () {
     clearInterval(interval);
   }
 })
+
+watch(() => props.frames, function () {
+  frame.value = 0;
+})
 </script>
