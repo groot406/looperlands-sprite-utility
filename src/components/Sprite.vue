@@ -18,8 +18,10 @@ const props = defineProps({
   offsetY: {type: Number, required: null},
   flipped: {type: Boolean, required: null, default: false},
   cooldown: {type: Number, required: null},
-  fixedFrame: {type: Number, required: null, default: null}
+  fixedFrame: {type: Number, required: null, default: null},
+  autoplay: { type: Boolean, required: null, default: true}
 });
+const emit = defineEmits(['done']);
 
 const frame = ref(props.fixedFrame || 0);
 let interval = null;
@@ -66,6 +68,10 @@ watch(() => props.fixedFrame, function () {
   if (props.fixedFrame !== null) {
     clearInterval(interval);
   }
+
+  if(frame.value === 0) {
+    emit('done');
+  }
 })
 
 function startAnimation() {
@@ -83,6 +89,9 @@ function startAnimation() {
     }
 
     frame.value = (frame.value + 1) % props.frames;
+    if(frame.value === 0) {
+      emit('done');
+    }
   }, props.speed);
 }
 
@@ -99,6 +108,14 @@ watch(frame, () => {
     }, props.cooldown)
   } else if(!props.cooldown) {
     coolDownInProgress.value = false;
+  }
+})
+
+watch(() => props.autoplay, function () {
+  if(props.autoplay) {
+    startAnimation();
+  } else {
+    clearInterval(interval);
   }
 })
 </script>

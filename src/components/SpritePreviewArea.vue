@@ -33,6 +33,12 @@
           </n-switch>
         </div>
       </div>
+      <div class="flex flex-row text-white text-lg p-1 flex-grow w-full items-center justify-center">
+        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Previous20Regular" @click="setPreviousFrame"></n-icon>
+        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Pause" @click="autoPlay = false"></n-icon>
+        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Play" @click="autoPlay = true"></n-icon>
+        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Next20Regular" @click="setNextFrame"></n-icon>
+      </div>
       <div class="w-1/2 pr-4">
         <n-slider v-model:value="zoom" :step="1" class="mt-1 w-full" :min="1" :max="25"/>
       </div>
@@ -49,6 +55,7 @@
                       :row="animation.row" :speed="slowMode ? animation.slowSpeed : animation.speed"
                       :frames="animation.frames" :flipped="animation.flipped"
                       :cooldown="animation.cooldown"
+                      :autoplay="autoPlay"
               />
             </div>
           </template>
@@ -62,6 +69,7 @@
                       :speed="slowMode ? animation.slowSpeed : animation.speed" :frames="animation.frames"
                       :flipped="animation.flipped"
                       :cooldown="animation.cooldown"
+                      :autoplay="autoPlay"
               />
             </div>
           </template>
@@ -74,21 +82,26 @@
             <div class="grid grid-cols-1 absolute w-full h-full">
               <div class="flex items-center justify-center">
                 <Sprite v-if="sprite" :sprite="sprite" :size="32" :zoom="3 * zoom"
-                        :row="animations[selectedAnimation].row"
-                        :speed="slowMode ? animations[selectedAnimation].slowSpeed : animations[selectedAnimation].speed"
-                        :frames="animations[selectedAnimation].frames" :flipped="animations[selectedAnimation].flipped"
-                        :cooldown="animations[selectedAnimation].cooldown"
+                        :row="animation.row"
+                        :speed="slowMode ? animation.slowSpeed : animation.speed"
+                        :frames="animation.frames" :flipped="animation.flipped"
+                        :cooldown="animation.cooldown"
+                        @done="nextSubAnimation"
+                        :autoplay="autoPlay"
+                        :fixed-frame="autoPlay ? null : previewFrame"
                 />
               </div>
             </div>
             <div class="grid grid-cols-1 absolute w-full h-full" v-if="showWeapon">
               <div class="flex items-center justify-center">
                 <Sprite v-if="weaponSprite && showWeapon" :sprite="weaponSprite" :offset-x="16" :offset-y="10"
-                        :size="48" :zoom="3 * zoom" :row="animations[selectedAnimation].row"
-                        :speed="slowMode ? animations[selectedAnimation].slowSpeed : animations[selectedAnimation].speed"
-                        :frames="animations[selectedAnimation].frames"
-                        :flipped="animations[selectedAnimation].flipped"
-                        :cooldown="animations[selectedAnimation].cooldown"
+                        :size="48" :zoom="3 * zoom" :row="animation.row"
+                        :speed="slowMode ? animation.slowSpeed : animation.speed"
+                        :frames="animation.frames"
+                        :flipped="animation.flipped"
+                        :cooldown="animation.cooldown"
+                        :autoplay="autoPlay"
+                        :fixed-frame="autoPlay ? null : previewFrame"
                 />
               </div>
             </div>
@@ -100,17 +113,24 @@
 </template>
 
 <script setup>
-import {onMounted, ref, watch} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
 import Sprite from "./Sprite.vue";
-
+import _ from 'lodash';
 import GridOutline from '@vicons/ionicons5/GridOutline'
 import Person from '@vicons/carbon/Person'
 import Cross from '@vicons/tabler/Cross'
+import Play from '@vicons/carbon/Play'
+import Pause from '@vicons/carbon/Pause'
+import Previous20Regular from '@vicons/fluent/Previous20Regular'
+import Next20Regular from '@vicons/fluent/Next20Regular'
 import AnimalRabbit20Regular from '@vicons/fluent/AnimalRabbit20Regular'
 import AnimalTurtle20Regular from '@vicons/fluent/AnimalTurtle20Regular'
 
 const props = defineProps(['sprite', 'weaponSprite'])
 const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon', 'update:slowMode', 'update:gridMode'])
+
+const autoPlay = ref(true);
+const previewFrame = ref(0);
 
 const slowMode = ref(false);
 const animationOptions = [
@@ -128,6 +148,10 @@ const animationOptions = [
   {label: "Idle left", value: 'idl_left'},
 ]
 
+if(props.sprite) {
+  animationOptions.push({label: "Turn around", value: ["wlk_down","wlk_down", "wlk_right","wlk_right", "wlk_up","wlk_up", "wlk_left","wlk_left"]});
+}
+
 const animations = {
   atk_right: {row: 0, speed: 50, slowSpeed: 200, frames: 5, cooldown: 600},
   wlk_right: {row: 1, speed: 100, slowSpeed: 250, frames: 4},
@@ -142,6 +166,23 @@ const animations = {
   wlk_left: {row: 1, speed: 100, slowSpeed: 250, frames: 4, flipped: true},
   idl_left: {row: 2, speed: 450, slowSpeed: 500, frames: 2, flipped: true},
 }
+
+const subAnimationIndex = ref(0);
+let updateSubAnimationInterval = null;
+const animation = computed(() => {
+  if (updateSubAnimationInterval) {
+    clearInterval(updateSubAnimationInterval);
+  }
+
+  if (!_.isArray(selectedAnimation.value)) {
+    return animations[selectedAnimation.value];
+  }
+
+  let subAnimation = animations[selectedAnimation.value[subAnimationIndex.value]];
+
+  return subAnimation;
+
+})
 
 // Add keyboard listeners to trigger animations
 onMounted(() => {
@@ -183,30 +224,54 @@ onMounted(() => {
   })
 })
 
+function nextSubAnimation() {
+  if(_.isArray(selectedAnimation.value)) {
+    subAnimationIndex.value = (subAnimationIndex.value + 1) % selectedAnimation.value.length;
+  }
+}
+
+function setNextFrame() {
+  previewFrame.value = (previewFrame.value + 1) % animation.value.frames;
+}
+
+function setPreviousFrame() {
+  previewFrame.value = (previewFrame.value - 1) % animation.value.frames;
+  if(previewFrame.value < 0) {
+    previewFrame.value = animation.value.frames - 1;
+  }
+}
+
 const gridMode = ref(false);
 const selectedAnimation = ref('idl_down');
 const zoom = ref(3)
 const showWeapon = ref(true)
 
 watch(selectedAnimation, (value) => {
-  emit('update:animation', animations[value]);
-}, { immediate: true})
+  if(_.isArray(value)) {
+    let animationChain = value.map((animation) => {
+      return animations[animation];
+    });
+    emit('update:animation', animationChain);
+  } else {
+    emit('update:animation', animations[value]);
+  }
+}, {immediate: true})
 
 watch(zoom, (value) => {
   emit('update:zoom', value);
-}, { immediate: true})
+}, {immediate: true})
 
 watch(showWeapon, (value) => {
   emit('update:showWeapon', value);
-}, { immediate: true})
+}, {immediate: true})
 
 watch(slowMode, (value) => {
   emit('update:slowMode', value);
-}, { immediate: true})
+}, {immediate: true})
 
 watch(gridMode, (value) => {
   emit('update:gridMode', value);
-}, { immediate: true})
+}, {immediate: true})
 
 </script>
 

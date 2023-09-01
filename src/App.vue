@@ -76,18 +76,18 @@
       </div>
     </template>
   </div>
-  <div v-if="exportingGif" id="gifExport" class="sprite relative pointer-events-none" :style="{width: '500px', height: '500px' }">
+  <div  id="gifExport" v-if="exportingGif" class="sprite relative pointer-events-none" :style="{width: '250px', height: '250px' }">
     <div class="absolute bottom-0 z-0 w-full bg-slate-800">
       <div class="w-full opacity-10"><img class="object-cover w-full" :src="bg"/></div>
     </div>
     <div v-if="droppedSprite" class="flex absolute w-full h-full">
       <div class="flex items-center justify-center w-full">
-        <Sprite :sprite="droppedSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames" :speed="currentAnimation.speed" :row="currentAnimation.row" :zoom="3 * currentZoom" :size="32" :cooldown="currentAnimation.cooldown" />
+        <Sprite :sprite="droppedSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames" :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed" :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="32" :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown" @done="updateSubAnimation" />
       </div>
     </div>
     <div v-if="weaponSprite && showWeapon" class="flex absolute w-full h-full">
       <div class="flex items-center justify-center w-full">
-        <Sprite :sprite="weaponSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames" :speed="currentAnimation.speed" :row="currentAnimation.row" :zoom="3 * currentZoom" :size="48" :cooldown="currentAnimation.cooldown" />
+        <Sprite :sprite="weaponSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames" :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed" :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="48" :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown" />
       </div>
     </div>
   </div>
@@ -98,7 +98,8 @@ import SpriteDropArea from './components/SpriteDropArea.vue'
 import SpritePreviewArea from './components/SpritePreviewArea.vue'
 import logo from './assets/looperlandlogo.png'
 import bg from './assets/final_looper_lands_charselect_sixframe.gif'
-import {nextTick, ref, watch} from 'vue'
+import { ref, watch} from 'vue'
+import _ from 'lodash';
 import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
@@ -147,9 +148,33 @@ function download(uri, filename) {
   document.body.removeChild(link);
 }
 
+const subAnimationIndex = ref(0);
+const subAnimations = ref(null);
+
 function setCurrentAnimation(animation) {
-  currentAnimation.value = animation;
+  if(_.isArray(animation)) {
+    subAnimationIndex.value = 0;
+    subAnimations.value = animation;
+    currentAnimation.value = animation[0];
+    return;
+  } else {
+    subAnimations.value = null;
+    currentAnimation.value = animation;
+  }
 }
+
+function updateSubAnimation() {
+  if(!_.isArray(subAnimations.value)) {
+    return;
+  }
+  subAnimationIndex.value++;
+  if(subAnimationIndex.value >= subAnimations.value.length) {
+    subAnimationIndex.value = 0;
+  }
+
+  currentAnimation.value = subAnimations.value[subAnimationIndex.value];
+}
+
 function setCurrentZoom(zoom) {
   currentZoom.value = zoom;
 }
@@ -291,8 +316,8 @@ function downloadGif() {
   encoder = new GIF({
     workers: 1,
     quality: 1,
-    width: 1000,
-    height: 1000,
+    width: 250,
+    height: 250,
     dither: false
   });
   encoder.on('finished', function(blob) {
@@ -311,8 +336,18 @@ function downloadGif() {
   });
 
   let speed = slowMode.value ? currentAnimation.value.slowSpeed : currentAnimation.value.speed;
-  for(var i=0; i < currentAnimation.value.frames; i++) {
-    let frame = i;
+  let totalFrames;
+  if(!_.isArray(subAnimations.value)) {
+    totalFrames = currentAnimation.value.frames;
+  } else {
+    totalFrames = 0;
+    for(let i=0; i < subAnimations.value.length; i++) {
+      totalFrames += subAnimations.value[i].frames;
+    }
+  }
+
+  for(var i=0; i < totalFrames; i++) {
+    let frame = i % currentAnimation.value.frames;
     setTimeout(() => { exportFrame.value = frame; }, (i * 200) + 50);
     setTimeout(() => { addFrame(speed) }, (i*200) + 150);
   }
@@ -320,16 +355,16 @@ function downloadGif() {
     setTimeout(() => { addFrame(currentAnimation.value.cooldown) }, ((i+1)*200));
   }
 
-  setTimeout(() => { exportingGif.value = false; encoder.render() }, ((currentAnimation.value.frames + 2)* 200) + 100);
+  setTimeout(() => { exportingGif.value = false; encoder.render() }, ((totalFrames + 2)* 200) + 100);
 }
 
 function addFrame(delay) {
   if(delay === 0) {
     delay = 1;
   }
-  htmlToImage.toCanvas(document.getElementById('gifExport'))
+  htmlToImage.toCanvas(document.getElementById('gifExport'), {pixelRatio: 1, width:250, height:250})
       .then((canvas) => {
-        encoder.addFrame(canvas, {delay: delay })
+        encoder.addFrame(canvas, {copy: true, delay: delay })
       })
 }
 </script>
