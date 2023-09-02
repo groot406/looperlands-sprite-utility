@@ -194,6 +194,9 @@ const animation = computed(() => {
 // Add keyboard listeners to trigger animations
 onMounted(() => {
   window.addEventListener('keydown', (e) => {
+    let selectedAnimationValue = selectedAnimation.value.split(',');
+    selectedAnimationValue = selectedAnimationValue[0];
+
     if (e.key === 'ArrowRight') {
       selectedAnimation.value = 'wlk_right'
     } else if (e.key === 'ArrowLeft') {
@@ -217,14 +220,14 @@ onMounted(() => {
 
     // Add spacebar to trigger attack for current direction
     if (e.key === ' ') {
-      selectedAnimation.value = selectedAnimation.value
+      selectedAnimation.value = selectedAnimationValue
           .replace('wlk', 'atk')
           .replace('idl', 'atk')
     }
 
     // Add esc and enter to trigger idle in current direction
     if (e.key === 'Enter' || e.key === 'Escape') {
-      selectedAnimation.value = selectedAnimation.value
+      selectedAnimation.value = selectedAnimationValue
           .replace('atk', 'idl')
           .replace('wlk', 'idl')
     }
