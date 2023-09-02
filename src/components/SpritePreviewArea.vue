@@ -33,7 +33,7 @@
           </n-switch>
         </div>
       </div>
-      <div class="flex flex-row text-white text-lg p-1 flex-grow w-full items-center justify-center">
+      <div v-if="sprite" class="flex flex-row text-white text-lg p-1 flex-grow w-full items-center justify-center">
         <n-icon v-if="!gridMode" class="opacity-50 hover:opacity-100 cursor-pointer" :component="Previous20Regular" @click="setPreviousFrame"></n-icon>
         <n-icon class="hover:opacity-100 cursor-pointer" :class="{'opacity-50' : autoPlay }" :component="Pause" @click="disableAutoPlay"></n-icon>
         <n-icon class="hover:opacity-100 cursor-pointer" :class="{'opacity-50' : !autoPlay }" :component="Play" @click="enableAutoPlay"></n-icon>
@@ -152,7 +152,7 @@ const animationOptions = [
 ]
 
 if(props.sprite) {
-  animationOptions.push({label: "Turn around", value: ["wlk_down","wlk_down", "wlk_right","wlk_right", "wlk_up","wlk_up", "wlk_left","wlk_left"]});
+  animationOptions.push({label: "Turn around", value: "wlk_down,wlk_down,wlk_right,wlk_right,wlk_up,wlk_up,wlk_left,wlk_left"});
 }
 
 const animations = {
@@ -177,11 +177,15 @@ const animation = computed(() => {
     clearInterval(updateSubAnimationInterval);
   }
 
-  if (!_.isArray(selectedAnimation.value)) {
-    return animations[selectedAnimation.value];
+  let selectedAnimationValue = selectedAnimation.value.split(',');
+  if(selectedAnimationValue.length === 1) {
+    selectedAnimationValue = selectedAnimationValue[0];
+  }
+  if (!_.isArray(selectedAnimationValue)) {
+    return animations[selectedAnimationValue];
   }
 
-  let subAnimation = animations[selectedAnimation.value[subAnimationIndex.value]];
+  let subAnimation = animations[selectedAnimationValue[subAnimationIndex.value]];
 
   return subAnimation;
 
@@ -228,8 +232,12 @@ onMounted(() => {
 })
 
 function nextSubAnimation() {
-  if(_.isArray(selectedAnimation.value)) {
-    subAnimationIndex.value = (subAnimationIndex.value + 1) % selectedAnimation.value.length;
+  let selectedAnimationValue = selectedAnimation.value.split(',');
+  if(selectedAnimationValue.length === 1) {
+    selectedAnimationValue = selectedAnimationValue[0];
+  }
+  if(_.isArray(selectedAnimationValue)) {
+    subAnimationIndex.value = (subAnimationIndex.value + 1) % selectedAnimationValue.length;
   }
 }
 
