@@ -10,7 +10,10 @@
       <div class="absolute bottom-0 z-0 w-full">
         <div class="w-full opacity-5"><img class="object-cover w-full" :src="bg"/></div>
       </div>
-      <SpritePreviewArea v-if="!syncing" :sprite="droppedSprite" :weapon-sprite="weaponSprite" class="z-1"  @update:animation="setCurrentAnimation" @update:zoom="setCurrentZoom" @update:showWeapon="setShowWeapon" @update:slowMode="setSlowMode" @update:grid-mode="setGridMode"/>
+      <SpritePreviewArea v-if="!syncing" :sprite="droppedSprite" :weapon-sprite="weaponSprite" class="z-1"
+                         @update:animation="setCurrentAnimation" @update:zoom="setCurrentZoom"
+                         @update:showWeapon="setShowWeapon" @update:slowMode="setSlowMode"
+                         @update:grid-mode="setGridMode"/>
     </div>
   </div>
   <div class="absolute bottom-4 right-4 flex gap-x-2" v-if="droppedSprite || weaponSprite">
@@ -23,9 +26,13 @@
         @click="downloadPng">Save as Png
     </div>
     <div v-if="!gridMode"
-        class="p-1 border flex items-center gap-x-2 rounded-full text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
-        :class="{'px-4': !exportingGifTotal, 'px-2': exportingGifTotal }"
-        @click="downloadGif"><div v-if="exportingGifTotal" class="animate-spin w-[12px] h-[12px]"><n-icon  class="animate-spin" :component="SpinnerIos20Filled" /></div>Save as Gif
+         class="p-1 border flex items-center gap-x-2 rounded-full text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
+         :class="{'px-4': !exportingGifTotal, 'px-2': exportingGifTotal }"
+         @click="showGifExport = true">
+      <div v-if="exportingGifTotal" class="animate-spin w-[12px] h-[12px]">
+        <n-icon class="animate-spin" :component="SpinnerIos20Filled"/>
+      </div>
+      Save as Gif
     </div>
   </div>
   <div v-show="exporting">
@@ -76,21 +83,45 @@
       </div>
     </template>
   </div>
-  <div  id="gifExport" v-if="exportingGif" class="sprite relative pointer-events-none" :style="{width: '250px', height: '250px' }">
-    <div class="absolute bottom-0 z-0 w-full bg-slate-800">
-      <div class="w-full opacity-10"><img class="object-cover w-full" :src="bg"/></div>
-    </div>
-    <div v-if="droppedSprite" class="flex absolute w-full h-full">
-      <div class="flex items-center justify-center w-full">
-        <Sprite :sprite="droppedSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames" :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed" :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="32" :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown" @done="updateSubAnimation" />
+  <teleport to="body">
+    <n-modal v-model:show="showGifExport" preset="card" class="w-1/2" title="Gif exporter">
+      <div class="flex xl:flex-row flex-col gap-x-10">
+        <div class="w-1/2 flex flex-col">
+          <n-form-item label="Use background color"><n-switch :disabled="exportingGifTotal" v-model:value="colorBg" /></n-form-item>
+          <n-form-item label="Background color">
+            <n-color-picker :disabled="!colorBg || exportingGifTotal" v-model:value="colorBgColor" />
+          </n-form-item>
+          <n-form-item label="Use background image"><n-switch :disabled="exportingGifTotal" v-model:value="imgBg" /></n-form-item>
+          <n-button @click="downloadGif" :disabled="exportingGifTotal" :loading="exportingGifTotal">Export to gif</n-button>
+        </div>
+        <div class="w-1/2 items-center place-self-end justify-self-end place-items-end justify-end flex">
+          <div id="gifExport" :class="{'border': !exportingGif}" class="sprite relative pointer-events-none" :style="{width: '250px', height: '250px' }">
+            <div class="absolute bottom-0 z-0 w-full bg-slate-800">
+              <div v-if="imgBg" class="w-full opacity-10"><img class="object-cover w-full" :src="bg"/></div>
+              <div v-if="colorBg && !imgBg" :style="{backgroundColor: colorBgColor}" class="w-[250px] h-[250px]"></div>
+            </div>
+            <div v-if="droppedSprite" class="flex absolute w-full h-full">
+              <div class="flex items-center justify-center w-full">
+                <Sprite :sprite="droppedSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames"
+                        :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed"
+                        :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="32"
+                        :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown"
+                        @done="updateSubAnimation"/>
+              </div>
+            </div>
+            <div v-if="weaponSprite && showWeapon" class="flex absolute w-full h-full">
+              <div class="flex items-center justify-center w-full">
+                <Sprite :sprite="weaponSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames"
+                        :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed"
+                        :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="48"
+                        :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown"/>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div v-if="weaponSprite && showWeapon" class="flex absolute w-full h-full">
-      <div class="flex items-center justify-center w-full">
-        <Sprite :sprite="weaponSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames" :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed" :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="48" :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown" />
-      </div>
-    </div>
-  </div>
+    </n-modal>
+  </teleport>
 </template>
 
 <script setup lang="ts">
@@ -98,7 +129,7 @@ import SpriteDropArea from './components/SpriteDropArea.vue'
 import SpritePreviewArea from './components/SpritePreviewArea.vue'
 import logo from './assets/looperlandlogo.png'
 import bg from './assets/final_looper_lands_charselect_sixframe.gif'
-import { ref, watch} from 'vue'
+import {ref, watch} from 'vue'
 import _ from 'lodash';
 import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
@@ -118,8 +149,12 @@ const showWeapon = ref(null);
 const slowMode = ref(null);
 const gridMode = ref(null);
 
+const showGifExport = ref(false);
 const exportingGif = ref(false);
 const exportingGifTotal = ref(false);
+const imgBg = ref(false);
+const colorBg = ref(true);
+const colorBgColor = ref('#F3F3F3');
 
 watch([droppedSprite, weaponSprite], (value) => {
   if (value) {
@@ -153,7 +188,7 @@ const subAnimations = ref(null);
 
 function setCurrentAnimation(animation) {
   console.log(animation);
-  if(_.isArray(animation)) {
+  if (_.isArray(animation)) {
     subAnimationIndex.value = 0;
     subAnimations.value = animation;
     currentAnimation.value = animation[0];
@@ -165,11 +200,11 @@ function setCurrentAnimation(animation) {
 }
 
 function updateSubAnimation() {
-  if(!_.isArray(subAnimations.value)) {
+  if (!_.isArray(subAnimations.value)) {
     return;
   }
   subAnimationIndex.value++;
-  if(subAnimationIndex.value >= subAnimations.value.length) {
+  if (subAnimationIndex.value >= subAnimations.value.length) {
     subAnimationIndex.value = 0;
   }
 
@@ -321,7 +356,8 @@ function downloadGif() {
     height: 250,
     dither: false
   });
-  encoder.on('finished', function(blob) {
+
+  encoder.on('finished', function (blob) {
     exportFrame.value = null;
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -334,42 +370,59 @@ function downloadGif() {
     URL.revokeObjectURL(url);
 
     exportingGifTotal.value = false;
+    showGifExport.value = false;
   });
 
-  if(!_.isArray(subAnimations.value)) {
+  if (!_.isArray(subAnimations.value)) {
     subAnimations.value = [currentAnimation.value];
   }
 
   let totalFrames;
-  if(!_.isArray(subAnimations.value)) {
+  if (!_.isArray(subAnimations.value)) {
     totalFrames = currentAnimation.value.frames;
   } else {
     totalFrames = 0;
-    for(let i=0; i < subAnimations.value.length; i++) {
+    for (let i = 0; i < subAnimations.value.length; i++) {
       totalFrames += subAnimations.value[i].frames;
     }
   }
 
-  for(var i=0; i < totalFrames; i++) {
+  for (var i = 0; i < totalFrames; i++) {
     let speed = slowMode.value ? currentAnimation.value.slowSpeed : currentAnimation.value.speed;
     let frame = i % currentAnimation.value.frames;
-    setTimeout(() => { exportFrame.value = frame; }, (i * 200) + 50);
-    setTimeout(() => { addFrame(speed) }, (i*200) + 150);
+    setTimeout(() => {
+      exportFrame.value = frame;
+    }, (i * 200) + 50);
+    setTimeout(() => {
+      addFrame(speed)
+    }, (i * 200) + 150);
   }
-  if(currentAnimation.value.cooldown) {
-    setTimeout(() => { addFrame(currentAnimation.value.cooldown) }, ((i+1)*200));
+  if (currentAnimation.value.cooldown) {
+    setTimeout(() => {
+      addFrame(currentAnimation.value.cooldown)
+    }, ((i + 1) * 200));
   }
 
-  setTimeout(() => { exportingGif.value = false; encoder.render() }, ((totalFrames + 2)* 200) + 100);
+  setTimeout(() => {
+    exportingGif.value = false;
+    encoder.render()
+  }, ((totalFrames + 2) * 200) + 100);
 }
 
 function addFrame(delay) {
-  if(delay === 0) {
+  if (delay === 0) {
     delay = 1;
   }
-  htmlToImage.toCanvas(document.getElementById('gifExport'), {pixelRatio: 1, width:250, height:250})
+  htmlToImage.toCanvas(document.getElementById('gifExport'), {
+    pixelRatio: 1,
+    width: 250,
+    height: 250
+  })
       .then((canvas) => {
-        encoder.addFrame(canvas, {copy: true, delay: delay })
+        encoder.addFrame(canvas, {
+          copy: true,
+          delay: delay
+        })
       })
 }
 </script>
