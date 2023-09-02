@@ -34,10 +34,11 @@
         </div>
       </div>
       <div class="flex flex-row text-white text-lg p-1 flex-grow w-full items-center justify-center">
-        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Previous20Regular" @click="setPreviousFrame"></n-icon>
-        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Pause" @click="autoPlay = false"></n-icon>
-        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Play" @click="autoPlay = true"></n-icon>
-        <n-icon class="opacity-50 hover:opacity-100 cursor-pointer" :component="Next20Regular" @click="setNextFrame"></n-icon>
+        <n-icon v-if="!gridMode" class="opacity-50 hover:opacity-100 cursor-pointer" :component="Previous20Regular" @click="setPreviousFrame"></n-icon>
+        <n-icon class="hover:opacity-100 cursor-pointer" :class="{'opacity-50' : autoPlay }" :component="Pause" @click="disableAutoPlay"></n-icon>
+        <n-icon class="hover:opacity-100 cursor-pointer" :class="{'opacity-50' : !autoPlay }" :component="Play" @click="enableAutoPlay"></n-icon>
+        <n-icon v-if="!gridMode" class="opacity-50 hover:opacity-100 cursor-pointer" :component="Next20Regular" @click="setNextFrame"></n-icon>
+        <div class="text-xs pl-5 font-light opacity-50 flex flex-row" v-if="!gridMode"><div class="w-4 text-center">{{ currentFrame + 1 }}</div> / <div class="w-4 text-center">{{ animation.frames }}</div></div>
       </div>
       <div class="w-1/2 pr-4">
         <n-slider v-model:value="zoom" :step="1" class="mt-1 w-full" :min="1" :max="25"/>
@@ -89,6 +90,7 @@
                         @done="nextSubAnimation"
                         :autoplay="autoPlay"
                         :fixed-frame="autoPlay ? null : previewFrame"
+                        @newFrame="(newFrame) => currentFrame = newFrame"
                 />
               </div>
             </div>
@@ -131,6 +133,7 @@ const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon'
 
 const autoPlay = ref(true);
 const previewFrame = ref(0);
+const currentFrame = ref(1);
 
 const slowMode = ref(false);
 const animationOptions = [
@@ -274,6 +277,17 @@ watch(slowMode, (value) => {
 watch(gridMode, (value) => {
   emit('update:gridMode', value);
 }, {immediate: true})
+
+function disableAutoPlay() {
+  if(previewFrame.value > animation.value.frames -1) {
+    previewFrame.value = 0;
+  }
+  autoPlay.value = false;
+}
+
+function enableAutoPlay() {
+  autoPlay.value = true;
+}
 
 </script>
 

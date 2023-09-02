@@ -21,7 +21,7 @@ const props = defineProps({
   fixedFrame: {type: Number, required: null, default: null},
   autoplay: { type: Boolean, required: null, default: true}
 });
-const emit = defineEmits(['done']);
+const emit = defineEmits(['done', 'newFrame']);
 
 const frame = ref(props.fixedFrame || 0);
 let interval = null;
@@ -120,6 +120,10 @@ watch(() => props.autoplay, function () {
 })
 
 watch(() => props.frames, function () {
-  frame.value = 0;
+  setTimeout(() => frame.value = 0, 10);
+})
+
+watch(frame, () => {
+  emit('newFrame', frame.value);
 })
 </script>
