@@ -78,7 +78,7 @@
       </div>
       <div v-else class="h-full">
         <div class="relative flex h-full flex-col items-center justify-center w-full">
-          <n-select v-model:value="selectedAnimation" :options="animationOptions" label-field="label"/>
+          <n-select v-model:value="selectedAnimation" :filterable="true" :options="animationOptions" label-field="label"/>
           <div class="text-xs w-full text-left text-slate-50 p-1 opacity-40 hover:opacity-80 cursor-pointer" @click="openAnimator">Create your own animation</div>
           <div class="relative w-full h-full -top-10 pointer-events-none" id="preview">
             <div class="grid grid-cols-1 absolute w-full h-full">
@@ -122,7 +122,7 @@
         <n-form-item label="Animation sequence" path="value">
           <n-dynamic-tags v-model:value="newAnimation.value">
             <template #input="{ submit, deactivate }">
-              <n-select class="w-40" ref="animationSelectorRef" :options="animationOptions" v-model:value="inputValue" :clear-filter-after-select="true" value-field="label" @on-update:value="submit(inputValue)" @blur="submit(inputValue)" />
+              <n-select class="w-40" ref="animationSelectorRef" :filterable="true" :options="animationOptions" v-model:value="inputValue" :clear-filter-after-select="true" value-field="label" @on-update:value="submit(inputValue)" @blur="submit(inputValue)" />
             </template>
           </n-dynamic-tags>
         </n-form-item>
