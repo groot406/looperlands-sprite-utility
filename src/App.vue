@@ -152,6 +152,7 @@ const subAnimationIndex = ref(0);
 const subAnimations = ref(null);
 
 function setCurrentAnimation(animation) {
+  console.log(animation);
   if(_.isArray(animation)) {
     subAnimationIndex.value = 0;
     subAnimations.value = animation;
@@ -335,7 +336,10 @@ function downloadGif() {
     exportingGifTotal.value = false;
   });
 
-  let speed = slowMode.value ? currentAnimation.value.slowSpeed : currentAnimation.value.speed;
+  if(!_.isArray(subAnimations.value)) {
+    subAnimations.value = [currentAnimation.value];
+  }
+
   let totalFrames;
   if(!_.isArray(subAnimations.value)) {
     totalFrames = currentAnimation.value.frames;
@@ -347,6 +351,7 @@ function downloadGif() {
   }
 
   for(var i=0; i < totalFrames; i++) {
+    let speed = slowMode.value ? currentAnimation.value.slowSpeed : currentAnimation.value.speed;
     let frame = i % currentAnimation.value.frames;
     setTimeout(() => { exportFrame.value = frame; }, (i * 200) + 50);
     setTimeout(() => { addFrame(speed) }, (i*200) + 150);

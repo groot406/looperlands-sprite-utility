@@ -283,6 +283,10 @@ const zoom = ref(3)
 const showWeapon = ref(true)
 
 watch(selectedAnimation, (value) => {
+  value = value.split(',');
+  if(value.length === 1) {
+    value = value[0];
+  }
   if(_.isArray(value)) {
     let animationChain = value.map((animation) => {
       return animations[animation];
