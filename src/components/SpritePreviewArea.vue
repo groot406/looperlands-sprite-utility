@@ -79,6 +79,7 @@
       <div v-else class="h-full">
         <div class="relative flex h-full flex-col items-center justify-center w-full">
           <n-select v-model:value="selectedAnimation" :options="animationOptions" label-field="label"/>
+          <div class="text-xs w-full text-left text-slate-50 p-1 opacity-40 hover:opacity-80 cursor-pointer" @click="openAnimator">Create your own animation</div>
           <div class="relative w-full h-full -top-10 pointer-events-none" id="preview">
             <div class="grid grid-cols-1 absolute w-full h-full">
               <div class="flex items-center justify-center">
@@ -112,10 +113,27 @@
       </div>
     </template>
   </div>
+  <teleport to="body">
+    <n-modal v-model:show="showAnimator" preset="card" class="w-1/3" title="Sprite animator">
+      <n-form v-model="newAnimation" label-placement="top">
+        <n-form-item label="Animation name" path="label">
+          <n-input v-model:value="newAnimation.label"></n-input>
+        </n-form-item>
+        <n-form-item label="Animation sequence" path="value">
+          <n-dynamic-tags v-model:value="newAnimation.value">
+            <template #input="{ submit, deactivate }">
+              <n-select class="w-40" ref="animationSelectorRef" :options="animationOptions" v-model:value="inputValue" :clear-filter-after-select="true" value-field="label" @on-update:value="submit(inputValue)" @blur="submit(inputValue)" />
+            </template>
+          </n-dynamic-tags>
+        </n-form-item>
+        <n-button @click="addNewAnimation" :disabled="!newAnimation.label || !newAnimation.value">Add animation</n-button>
+      </n-form>
+    </n-modal>
+  </teleport>
 </template>
 
 <script setup>
-import {computed, onMounted, ref, watch} from 'vue'
+import {computed, onMounted, ref, watch, nextTick} from 'vue'
 import Sprite from "./Sprite.vue";
 import _ from 'lodash';
 import GridOutline from '@vicons/ionicons5/GridOutline'
@@ -134,9 +152,11 @@ const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon'
 const autoPlay = ref(true);
 const previewFrame = ref(0);
 const currentFrame = ref(1);
-
+const showAnimator = ref(false);
+const inputValue = ref('');
 const slowMode = ref(false);
-const animationOptions = [
+const newAnimation = ref({});
+const animationOptions = ref([
   {label: "Attack right", value: 'atk_right'},
   {label: "Walk right", value: 'wlk_right'},
   {label: "Idle right", value: 'idl_right'},
@@ -149,10 +169,10 @@ const animationOptions = [
   {label: "Attack left", value: 'atk_left'},
   {label: "Walk left", value: 'wlk_left'},
   {label: "Idle left", value: 'idl_left'},
-]
+])
 
 if(props.sprite) {
-  animationOptions.push({label: "Turn around", value: "wlk_down,wlk_down,wlk_right,wlk_right,wlk_up,wlk_up,wlk_left,wlk_left"});
+  animationOptions.value.push({label: "Turn around", value: "wlk_down,wlk_down,wlk_right,wlk_right,wlk_up,wlk_up,wlk_left,wlk_left"});
 }
 
 const animations = {
@@ -300,5 +320,31 @@ function enableAutoPlay() {
   autoPlay.value = true;
 }
 
+function openAnimator() {
+  newAnimation.value = {};
+  showAnimator.value = true;
+}
+
+const animationSelectorRef = ref(null);
+watch(animationSelectorRef, (value) => {
+  if (value) nextTick(() => value.focus())
+})
+
+function addNewAnimation() {
+  // Loop over newAnimation.value.value, lookup element by label and get value
+  let animationChain = newAnimation.value.value.map((selectedAnimation) => {
+    console.log(selectedAnimation)
+    let animationIndex = _.findIndex(animationOptions.value, { label: selectedAnimation });
+    console.log(animationIndex);
+    return animationOptions.value[animationIndex].value
+  });
+
+  newAnimation.value.value = animationChain.join(',');
+  console.log(newAnimation.value);
+  animationOptions.value.push(_.cloneDeep(newAnimation.value));
+  selectedAnimation.value = newAnimation.value.value;
+  newAnimation.value = {}
+  showAnimator.value = false;
+}
 </script>
 
