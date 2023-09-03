@@ -128,7 +128,7 @@
 import SpriteDropArea from './components/SpriteDropArea.vue'
 import SpritePreviewArea from './components/SpritePreviewArea.vue'
 import logo from './assets/looperlandlogo.png'
-import bg from './assets/final_looper_lands_charselect_sixframe.gif'
+import bg from './assets/bg.png'
 import {ref, watch} from 'vue'
 import _ from 'lodash';
 import * as htmlToImage from 'html-to-image';
@@ -387,6 +387,7 @@ function downloadGif() {
     }
   }
 
+  currentAnimation.value = subAnimations.value[0];
   for (var i = 0; i < totalFrames; i++) {
     let speed = slowMode.value ? currentAnimation.value.slowSpeed : currentAnimation.value.speed;
     let frame = i % currentAnimation.value.frames;
