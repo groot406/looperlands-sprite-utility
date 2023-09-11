@@ -128,6 +128,7 @@
                         :row="exportAnimation.row" :zoom="1.5 * currentZoom" :size="48"
                         :flipped="exportAnimation.flipped"/>
                 <Sprite v-else :sprite="weaponSprite"
+                        :frame="currentFrame"
                         :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="48"
                         :flipped="currentAnimation.flipped"/>
               </div>
