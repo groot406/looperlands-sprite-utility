@@ -10,10 +10,12 @@
       <div class="absolute bottom-0 z-0 w-full">
         <div class="w-full opacity-5"><img class="object-cover w-full" :src="bg"/></div>
       </div>
-      <SpritePreviewArea v-if="!syncing" :sprite="droppedSprite" :weapon-sprite="weaponSprite" class="z-1"
+      <SpritePreviewArea :sprite="droppedSprite" :weapon-sprite="weaponSprite"
                          @update:animation="setCurrentAnimation" @update:zoom="setCurrentZoom"
                          @update:showWeapon="setShowWeapon" @update:slowMode="setSlowMode"
-                         @update:grid-mode="setGridMode"/>
+                         @update:subAnimation="updateSubAnimation"
+                         @update:grid-mode="setGridMode" @update:frame="(frame) => currentFrame = frame"
+      />
     </div>
   </div>
   <div class="absolute bottom-4 right-4 flex gap-x-2" v-if="droppedSprite || weaponSprite">
@@ -35,10 +37,10 @@
       Save as Gif
     </div>
   </div>
-  <div v-show="exporting">
+  <div v-if="exporting">
     <template v-if="droppedSprite">
       <div id="export_character_1" class="sprite overflow-hidden" :style="{ width: '160px', height: '288px' }">
-        <img :src="droppedSprite"/>
+        <img :src="droppedSprite" :style="{width: '100%' }"/>
       </div>
       <div id="export_character_2" class="sprite overflow-hidden" :style="{ width: '320px', height: '576px' }">
         <img :src="droppedSprite" :style="{width: '100%'}"/>
@@ -47,13 +49,14 @@
         <img :src="droppedSprite" :style="{width: '100%'}"/>
       </div>
       <div id="export_character_picker" class="relative sprite overflow-hidden flex items-center justify-center"
-           :style="{ width: '500px', height: '500px' }">
+           :style="{ width: '600px', height: '600px' }">
         <div class="absolute bottom-0 z-0 w-full bg-slate-800">
           <div class="w-full opacity-10"><img class="object-cover w-full" :src="bg"/></div>
         </div>
         <Sprite :sprite="droppedSprite" :size="32" :zoom="10"
                 :row="8"
                 :speed="1000"
+                :frame="0"
                 :frames="1"
         />
       </div>
@@ -69,14 +72,14 @@
         <img :src="weaponSprite" :style="{width: '100%'}"/>
       </div>
       <div id="export_weapon_picker" class="relative sprite overflow-hidden flex items-center justify-center"
-           :style="{ width: '500px', height: '500px' }">
+           :style="{ width: '600px', height: '600px' }">
         <div class="absolute bottom-0 z-0 w-full bg-slate-800">
           <div class="w-full opacity-10"><img class="object-cover w-full" :src="bg"/></div>
         </div>
         <div class="relative left-[70px]">
           <Sprite :sprite="weaponSprite" :size="48" :zoom="10"
                   :row="8"
-                  :speed="1000"
+                  :frame="0"
                   :frames="1"
           />
         </div>
@@ -87,34 +90,46 @@
     <n-modal v-model:show="showGifExport" preset="card" class="w-1/2" title="Gif exporter">
       <div class="flex xl:flex-row flex-col gap-x-10">
         <div class="w-1/2 flex flex-col">
-          <n-form-item label="Use background color"><n-switch :disabled="exportingGifTotal" v-model:value="colorBg" /></n-form-item>
-          <n-form-item label="Background color">
-            <n-color-picker :disabled="!colorBg || exportingGifTotal" v-model:value="colorBgColor" />
+          <n-form-item label="Use background color">
+            <n-switch :disabled="exportingGifTotal" v-model:value="colorBg"/>
           </n-form-item>
-          <n-form-item label="Use background image"><n-switch :disabled="exportingGifTotal" v-model:value="imgBg" /></n-form-item>
-          <n-button @click="downloadGif" :disabled="exportingGifTotal" :loading="exportingGifTotal">Export to gif</n-button>
+          <n-form-item label="Background color">
+            <n-color-picker :disabled="!colorBg || exportingGifTotal" v-model:value="colorBgColor"/>
+          </n-form-item>
+          <n-form-item label="Use background image">
+            <n-switch :disabled="exportingGifTotal" v-model:value="imgBg"/>
+          </n-form-item>
+          <n-button @click="downloadGif" :disabled="exportingGifTotal" :loading="exportingGifTotal">Export to gif
+          </n-button>
         </div>
         <div class="w-1/2 items-center place-self-end justify-self-end place-items-end justify-end flex">
-          <div id="gifExport" :class="{'border': !exportingGif}" class="sprite relative pointer-events-none" :style="{width: '250px', height: '250px' }">
+          <div id="gifExport" :class="{'border': !exportingGif}" class="sprite relative pointer-events-none"
+               :style="{width: '384px', height: '384px' }">
             <div class="absolute bottom-0 z-0 w-full bg-slate-800">
-              <div v-if="imgBg" class="w-full opacity-10"><img class="object-cover w-full" :src="bg"/></div>
-              <div v-if="colorBg && !imgBg" :style="{backgroundColor: colorBgColor}" class="w-[250px] h-[250px]"></div>
+              <div v-if="imgBg" class="w-full opacity-10"><img class="object-cover w-full" :src="exportBg"/></div>
+              <div v-if="colorBg && !imgBg" :style="{backgroundColor: colorBgColor}" class="w-[384px] h-[384px]"></div>
             </div>
             <div v-if="droppedSprite" class="flex absolute w-full h-full">
               <div class="flex items-center justify-center w-full">
-                <Sprite :sprite="droppedSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames"
-                        :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed"
+                <Sprite v-if="exportAnimation"
+                        :sprite="droppedSprite" :frame="exportFrame"
+                        :row="exportAnimation.row" :zoom="1.5 * currentZoom" :size="32"
+                        :flipped="exportAnimation.flipped"
+                />
+                <Sprite v-else :sprite="droppedSprite" :frame="currentFrame"
                         :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="32"
-                        :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown"
-                        @done="updateSubAnimation"/>
+                        :flipped="currentAnimation.flipped"
+                />
               </div>
             </div>
             <div v-if="weaponSprite && showWeapon" class="flex absolute w-full h-full">
               <div class="flex items-center justify-center w-full">
-                <Sprite :sprite="weaponSprite" :fixed-frame="exportFrame" :frames="currentAnimation.frames"
-                        :speed="slowMode ? currentAnimation.slowSpeed : currentAnimation.speed"
+                <Sprite v-if="exportAnimation" :sprite="weaponSprite" :frame="exportFrame"
+                        :row="exportAnimation.row" :zoom="1.5 * currentZoom" :size="48"
+                        :flipped="exportAnimation.flipped"/>
+                <Sprite v-else :sprite="weaponSprite"
                         :row="currentAnimation.row" :zoom="1.5 * currentZoom" :size="48"
-                        :flipped="currentAnimation.flipped" :cooldown="currentAnimation.cooldown"/>
+                        :flipped="currentAnimation.flipped"/>
               </div>
             </div>
           </div>
@@ -128,21 +143,23 @@
 import SpriteDropArea from './components/SpriteDropArea.vue'
 import SpritePreviewArea from './components/SpritePreviewArea.vue'
 import logo from './assets/looperlandlogo.png'
+import exportBg from './assets/final_looper_lands_charselect_sixframe.png'
 import bg from './assets/final_looper_lands_charselect_sixframe.gif'
-import {ref, watch} from 'vue'
+import {nextTick, ref} from 'vue'
 import _ from 'lodash';
 import * as htmlToImage from 'html-to-image';
 import JSZip from 'jszip';
 import FileSaver from 'file-saver';
 import Sprite from "./components/Sprite.vue";
-import GIF from "gif.js";
+import GIF from "gif.js.optimized";
 import SpinnerIos20Filled from '@vicons/fluent/SpinnerIos20Filled';
 
 const droppedSprite = ref(null)
 const weaponSprite = ref(null)
-const syncing = ref(false);
+
 const exporting = ref(false);
 const exportFrame = ref(null);
+const exportAnimation = ref(null);
 const currentAnimation = ref(null);
 const currentZoom = ref(null);
 const showWeapon = ref(null);
@@ -152,26 +169,21 @@ const gridMode = ref(null);
 const showGifExport = ref(false);
 const exportingGif = ref(false);
 const exportingGifTotal = ref(false);
+const exportingZip = ref(false);
 const imgBg = ref(false);
 const colorBg = ref(true);
 const colorBgColor = ref('#F3F3F3');
-
-watch([droppedSprite, weaponSprite], (value) => {
-  if (value) {
-    syncing.value = true;
-    setTimeout(() => {
-      syncing.value = false;
-    }, 1);
-  }
-})
+const currentFrame = ref(0);
 
 function downloadPng() {
   exporting.value = true;
+
   htmlToImage.toPng(document.getElementById('preview'))
       .then(function (dataUrl) {
         download(dataUrl);
         exporting.value = false;
       });
+
 }
 
 function download(uri, filename) {
@@ -187,7 +199,6 @@ const subAnimationIndex = ref(0);
 const subAnimations = ref(null);
 
 function setCurrentAnimation(animation) {
-  console.log(animation);
   if (_.isArray(animation)) {
     subAnimationIndex.value = 0;
     subAnimations.value = animation;
@@ -199,16 +210,8 @@ function setCurrentAnimation(animation) {
   }
 }
 
-function updateSubAnimation() {
-  if (!_.isArray(subAnimations.value)) {
-    return;
-  }
-  subAnimationIndex.value++;
-  if (subAnimationIndex.value >= subAnimations.value.length) {
-    subAnimationIndex.value = 0;
-  }
-
-  currentAnimation.value = subAnimations.value[subAnimationIndex.value];
+function updateSubAnimation(index) {
+  currentAnimation.value = subAnimations.value[index];
 }
 
 function setCurrentZoom(zoom) {
@@ -227,136 +230,167 @@ function setGridMode(grid) {
   gridMode.value = grid;
 }
 
-function exportZip() {
+async function exportZip() {
   if (!droppedSprite.value && !weaponSprite.value) {
     return;
   }
 
   exporting.value = true;
 
-  setTimeout(() => {
-    let exportedImages = 0;
-    let exportTarget = (droppedSprite.value && weaponSprite.value) ? 8 : 4;
-    let file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker;
+  nextTick(() => {
+    setTimeout(() => {
+      let exportedImages = 0;
+      let exportTarget = (droppedSprite.value && weaponSprite.value) ? 8 : 4;
+      let file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker;
 
-    if (droppedSprite.value) {
-      htmlToImage.toBlob(document.getElementById('export_character_1'))
-          .then(function (blob) {
-            exporting.value = false;
-            exportedImages++;
-            file1 = blob;
-            if (exportedImages === exportTarget)
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-          });
+      if (droppedSprite.value) {
+        htmlToImage.toBlob(document.getElementById('export_character_1'), {
+          pixelRatio: 1,
+          width: 160,
+          height: 288
+        }).then(function (blob) {
+          exporting.value = false;
+          exportedImages++;
+          file1 = blob;
+          if (exportedImages === exportTarget)
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+        });
 
-      htmlToImage.toBlob(document.getElementById('export_character_2'))
-          .then(function (blob) {
-            exportedImages++;
-            file2 = blob;
-            if (exportedImages === exportTarget) {
-              exporting.value = false;
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-            }
-          });
+        htmlToImage.toBlob(document.getElementById('export_character_2'), {
+          pixelRatio: 1,
+          width: 320,
+          height: 576
+        }).then(function (blob) {
+          exporting.value = false;
+          exportedImages++;
+          file2 = blob;
+          if (exportedImages === exportTarget)
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+        });
 
-      htmlToImage.toBlob(document.getElementById('export_character_3'))
-          .then(function (blob) {
-            exportedImages++;
-            file3 = blob;
-            if (exportedImages === exportTarget) {
-              exporting.value = false;
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-            }
-          });
+        htmlToImage.toBlob(document.getElementById('export_character_3'), {
+          pixelRatio: 1,
+          width: 480,
+          height: 864
+        }).then(function (blob) {
+          exporting.value = false;
+          exportedImages++;
+          file3 = blob;
+          if (exportedImages === exportTarget)
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+        });
 
-      htmlToImage.toBlob(document.getElementById('export_character_picker'))
-          .then(function (blob) {
-            exportedImages++;
-            picker = blob;
-            if (exportedImages === exportTarget) {
-              exporting.value = false;
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-            }
-          });
-    }
+        htmlToImage.toBlob(document.getElementById('export_character_picker'), {
+          pixelRatio: 1,
+          width: 600,
+          height: 600
+        }).then(function (blob) {
+          exporting.value = false;
+          exportedImages++;
+          picker = blob;
+          if (exportedImages === exportTarget)
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+        });
+      }
 
-    if (weaponSprite.value) {
-      htmlToImage.toBlob(document.getElementById('export_weapon_1'))
-          .then(function (blob) {
-            exportedImages++;
-            weaponFile1 = blob;
-            if (exportedImages === 6) {
-              exporting.value = false;
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-            }
-          });
+      if (weaponSprite.value) {
+        htmlToImage.toBlob(document.getElementById('export_weapon_1'), {
+          pixelRatio: 1,
+          width: 240,
+          height: 432
+        }).then(function (blob) {
+          exporting.value = false;
+          exportedImages++;
+          weaponFile1 = blob;
+          if (exportedImages === exportTarget)
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+        });
 
-      htmlToImage.toBlob(document.getElementById('export_weapon_2'))
-          .then(function (blob) {
-            exportedImages++;
-            weaponFile2 = blob;
-            if (exportedImages === 6) {
-              exporting.value = false;
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-            }
-          });
+        htmlToImage.toBlob(document.getElementById('export_weapon_2'), {
+          pixelRatio: 1,
+          width: 480,
+          height: 864
+        }).then(function (blob) {
+          exporting.value = false;
+          exportedImages++;
+          weaponFile2 = blob;
+          if (exportedImages === exportTarget)
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+        });
 
-      htmlToImage.toBlob(document.getElementById('export_weapon_3'))
-          .then(function (blob) {
-            exportedImages++;
-            weaponFile3 = blob;
-            if (exportedImages === 6) {
-              exporting.value = false
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-            }
-          });
+        htmlToImage.toBlob(document.getElementById('export_weapon_3'), {
+          pixelRatio: 1,
+          width: 720,
+          height: 1296
+        }).then(function (blob) {
+          exporting.value = false;
+          exportedImages++;
+          weaponFile3 = blob;
+          if (exportedImages === exportTarget)
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+        });
 
-      htmlToImage.toBlob(document.getElementById('export_weapon_picker'))
-          .then(function (blob) {
-            exportedImages++;
-            weaponPicker = blob;
-            if (exportedImages === exportTarget) {
-              exporting.value = false;
-              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
-            }
-          });
-    }
-  }, 100);
+        htmlToImage.toBlob(document.getElementById('export_weapon_picker'), {
+          pixelRatio: 1,
+          width: 600,
+          height: 600
+        }).then(function (blob) {
+          exportedImages++;
+          weaponPicker = blob;
+          if (exportedImages === exportTarget) {
+            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker);
+          }
+        });
+      }
+
+    }, 500)
+  })
 }
 
 function generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker) {
+  if (exportingZip.value) {
+    return;
+  }
+
+  exportingZip.value = true;
+
   const zip = new JSZip();
   if (droppedSprite.value) {
+    zip.file('avatar/avatar.png', picker);
     zip.file('avatar/1.png', file1);
     zip.file('avatar/2.png', file2);
     zip.file('avatar/3.png', file3);
-    zip.file('avatar/picker.png', picker);
   }
 
   if (weaponSprite.value) {
+    zip.file('weapon/weapon.png', weaponPicker);
     zip.file('weapon/1.png', weaponFile1);
     zip.file('weapon/2.png', weaponFile2);
     zip.file('weapon/3.png', weaponFile3);
-    zip.file('weapon/picker.png', weaponPicker);
   }
+
   zip.generateAsync({type: 'blob'}).then(function (content) {
     FileSaver.saveAs(content, 'export.zip');
+    setTimeout(() => {
+      exportingZip.value = false;
+      exporting.value = false;
+    }, 100);
   });
 }
 
 let encoder = null;
 
 function downloadGif() {
+
   exportingGif.value = true;
   exportingGifTotal.value = true;
   encoder = new GIF({
-    workers: 1,
+    workers: 2,
     quality: 1,
-    width: 250,
-    height: 250,
+    width: 384,
+    height: 384,
     dither: false
   });
-
   encoder.on('finished', function (blob) {
     exportFrame.value = null;
     const url = URL.createObjectURL(blob);
@@ -371,58 +405,56 @@ function downloadGif() {
 
     exportingGifTotal.value = false;
     showGifExport.value = false;
+    exportAnimation.value = null;
   });
+
 
   if (!_.isArray(subAnimations.value)) {
     subAnimations.value = [currentAnimation.value];
   }
 
-  let totalFrames;
-  if (!_.isArray(subAnimations.value)) {
-    totalFrames = currentAnimation.value.frames;
-  } else {
-    totalFrames = 0;
-    for (let i = 0; i < subAnimations.value.length; i++) {
-      totalFrames += subAnimations.value[i].frames;
-    }
-  }
+  let totalTime = 0;
 
-  for (var i = 0; i < totalFrames; i++) {
-    let speed = slowMode.value ? currentAnimation.value.slowSpeed : currentAnimation.value.speed;
-    let frame = i % currentAnimation.value.frames;
-    setTimeout(() => {
-      exportFrame.value = frame;
-    }, (i * 200) + 50);
-    setTimeout(() => {
-      addFrame(speed)
-    }, (i * 200) + 150);
-  }
-  if (currentAnimation.value.cooldown) {
-    setTimeout(() => {
-      addFrame(currentAnimation.value.cooldown)
-    }, ((i + 1) * 200));
+  for (let a = 0; a < Object.keys(subAnimations.value).length; a++) {
+
+    let animationIndex = a;
+    exportAnimation.value = subAnimations.value[Object.keys(subAnimations.value)[animationIndex]];
+    setTimeout(() => { exportAnimation.value = subAnimations.value[Object.keys(subAnimations.value)[animationIndex]]; }, totalTime)
+
+    for (let i = 0; i < exportAnimation.value.frames; i++) {
+      let speed = slowMode.value ? exportAnimation.value.slowSpeed : exportAnimation.value.speed;
+
+      totalTime += speed;
+      let frame = i;
+      setTimeout(() => exportFrame.value = frame, totalTime + 5 )
+      setTimeout(() => addFrame(speed), totalTime + 10 )
+
+      if (exportAnimation.value.cooldown && i === exportAnimation.value.frames - 1) {
+        totalTime += exportAnimation.value.cooldown;
+        setTimeout(() => addFrame(speed), totalTime )
+      }
+    }
   }
 
   setTimeout(() => {
     exportingGif.value = false;
     encoder.render()
-  }, ((totalFrames + 2) * 200) + 100);
+  }, totalTime + 100);
+
 }
 
 function addFrame(delay) {
-  if (delay === 0) {
-    delay = 1;
-  }
   htmlToImage.toCanvas(document.getElementById('gifExport'), {
     pixelRatio: 1,
-    width: 250,
-    height: 250
+    width: 384,
+    height: 384
   })
       .then((canvas) => {
-        encoder.addFrame(canvas, {
-          copy: true,
-          delay: delay
-        })
+        let options = {copy: true}
+        if (delay) {
+          options.delay = delay;
+        }
+        encoder.addFrame(canvas, options)
       })
 }
 </script>

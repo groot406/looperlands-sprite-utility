@@ -12,29 +12,76 @@ const props = defineProps({
   size: {type: Number, required: true},
   zoom: {type: Number, required: true},
   row: {type: Number, required: true},
-  speed: {type: Number, required: true},
-  frames: {type: Number, required: true},
   offsetX: {type: Number, required: null},
   offsetY: {type: Number, required: null},
   flipped: {type: Boolean, required: null, default: false},
-  cooldown: {type: Number, required: null},
-  fixedFrame: {type: Number, required: null, default: null},
-  autoplay: { type: Boolean, required: null, default: true}
+  frame: {type: Number, required: null, default: null},
+  frames: {type: Number, required: null, default: null},
+  speed: {type: Number, required: null, default: null},
+  cooldown: {type: Number, required: null, default: null},
+  paused: {type: Boolean, required: null, default: false},
 });
-const emit = defineEmits(['done', 'newFrame']);
 
-const frame = ref(props.fixedFrame || 0);
-let interval = null;
-let coolDownInProgress = ref(false);
+const innerFrame = ref(0);
+let frameTimer = null
+let cooldownInProgress = false;
+onMounted(startAnimation);
+
+function startAnimation () {
+  if(props.frame === null && props.frames) {
+    if(frameTimer) {
+      clearInterval(frameTimer);
+    }
+    frameTimer = setInterval(() => {
+      if(props.paused) {
+        return;
+      }
+
+      if(cooldownInProgress) {
+        return;
+      }
+
+      if (innerFrame.value === props.frames - 1) {
+        if(props.cooldown) {
+          cooldownInProgress = true;
+          setTimeout(() => {
+            cooldownInProgress = false;
+          }, props.cooldown);
+        }
+        innerFrame.value = 0;
+      } else {
+        innerFrame.value++;
+      }
+    }, props.speed);
+  }
+}
+
+watch(() => props.paused, (value) => {
+
+  if(props.paused && frameTimer) {
+    clearInterval(frameTimer);
+    return;
+  }
+
+  if(!props.paused) {
+    startAnimation();
+  }
+})
+
+watch(() => props.speed, (value) => {
+  startAnimation();
+});
 
 const style = computed(() => {
+  const renderFrame = (props.frame !== null) ? props.frame : innerFrame.value;
+
   return {
     backgroundImage: 'url(' + props.sprite + ')',
     width: props.size + 'px',
     height: props.size + 'px',
     overflow: 'hidden',
     scale: props.zoom,
-    backgroundPositionX: (frame.value * props.size * -1) + 'px',
+    backgroundPositionX: (renderFrame * props.size * -1) + 'px',
     backgroundPositionY: (props.row * props.size * -1) + 'px'
   }
 })
@@ -53,77 +100,4 @@ const containerStyle = computed(() => {
   }
 })
 
-onMounted(startAnimation);
-
-watch(() => props.speed, function () {
-    startAnimation();
-})
-
-watch(() => props.row, function () {
-  frame.value = props.fixedFrame || 0;
-})
-
-watch(() => props.fixedFrame, function () {
-  frame.value = props.fixedFrame || 0;
-  if (props.fixedFrame !== null) {
-    clearInterval(interval);
-  }
-
-  if(frame.value === 0) {
-    emit('done');
-  }
-})
-
-function startAnimation() {
-  if (interval) {
-    clearInterval(interval);
-  }
-
-  if(props.fixedFrame !== null) {
-    return;
-  }
-
-  interval = setInterval(() => {
-    if (coolDownInProgress.value === true) {
-      return;
-    }
-
-    frame.value = (frame.value + 1) % props.frames;
-    if(frame.value === 0) {
-      emit('done');
-    }
-  }, props.speed);
-}
-
-let cooldownTimeout;
-
-watch(frame, () => {
-  if (frame.value === 0 && props.cooldown && coolDownInProgress.value === false) {
-    coolDownInProgress.value = true;
-    if(cooldownTimeout) {
-      clearTimeout(cooldownTimeout);
-    }
-    cooldownTimeout = setTimeout(() => {
-      coolDownInProgress.value = false;
-    }, props.cooldown)
-  } else if(!props.cooldown) {
-    coolDownInProgress.value = false;
-  }
-})
-
-watch(() => props.autoplay, function () {
-  if(props.autoplay) {
-    startAnimation();
-  } else {
-    clearInterval(interval);
-  }
-})
-
-watch(() => props.frames, function () {
-  setTimeout(() => frame.value = 0, 10);
-})
-
-watch(frame, () => {
-  emit('newFrame', frame.value);
-})
 </script>

@@ -1,7 +1,7 @@
 <template>
   <div class="bg-slate-800 w-full h-full p-10 overflow-hidden">
     <div class="my-5 flex gap-x-10 rounded-full bg-slate-600 p-2">
-      <div class="w-1/2 flex flex-row gap-x-4">
+      <div class="w-1/2 flex flex-row gap-x-4 z-10">
         <div>
           <n-switch v-model:value="gridMode" size="large" :disabled="!sprite && !weaponSprite">
             <template #checked-icon>
@@ -33,13 +33,15 @@
           </n-switch>
         </div>
       </div>
-      <div v-if="sprite" class="flex flex-row text-white text-lg p-1 flex-grow w-full items-center justify-center">
-        <n-icon v-if="!gridMode" class="opacity-50 hover:opacity-100 cursor-pointer" :component="Previous20Regular" @click="setPreviousFrame"></n-icon>
-        <n-icon class="hover:opacity-100 cursor-pointer" :class="{'opacity-50' : autoPlay }" :component="Pause" @click="disableAutoPlay"></n-icon>
-        <n-icon class="hover:opacity-100 cursor-pointer" :class="{'opacity-50' : !autoPlay }" :component="Play" @click="enableAutoPlay"></n-icon>
-        <n-icon v-if="!gridMode" class="opacity-50 hover:opacity-100 cursor-pointer" :component="Next20Regular" @click="setNextFrame"></n-icon>
-        <div class="text-xs pl-5 font-light opacity-50 flex flex-row" v-if="!gridMode"><div class="w-4 text-center">{{ currentFrame + 1 }}</div> / <div class="w-4 text-center">{{ animation.frames }}</div></div>
-      </div>
+      <FrameControls v-if="sprite"
+                     @frame="(newFrame) => currentFrame = newFrame"
+                     @done="nextSubAnimation"
+                     @pause="setPaused"
+                     :allow-frame-stepper="!gridMode"
+                     :frames="animation.frames"
+                     :cooldown="animation.cooldown"
+                     :speed="slowMode ? animation.slowSpeed : animation.speed"
+      />
       <div class="w-1/2 pr-4">
         <n-slider v-model:value="zoom" :step="1" class="mt-1 w-full" :min="1" :max="25"/>
       </div>
@@ -53,10 +55,12 @@
           <template v-for="(animation, key) in animations">
             <div class="flex items-center justify-center">
               <Sprite :key="key" v-if="sprite" :sprite="sprite" :size="32" :zoom="zoom"
-                      :row="animation.row" :speed="slowMode ? animation.slowSpeed : animation.speed"
-                      :frames="animation.frames" :flipped="animation.flipped"
+                      :row="animation.row"
+                      :flipped="animation.flipped"
+                      :speed="slowMode ? animation.slowSpeed : animation.speed"
+                      :frames="animation.frames"
                       :cooldown="animation.cooldown"
-                      :autoplay="autoPlay"
+                      :paused="paused"
               />
             </div>
           </template>
@@ -67,10 +71,11 @@
               <Sprite :key="'weapon_' + key" v-if="weaponSprite && showWeapon" :sprite="weaponSprite" :offset-x="16"
                       :offset-y="10"
                       :size="48" :zoom="zoom" :row="animation.row"
-                      :speed="slowMode ? animation.slowSpeed : animation.speed" :frames="animation.frames"
                       :flipped="animation.flipped"
+                      :speed="slowMode ? animation.slowSpeed : animation.speed"
+                      :frames="animation.frames"
                       :cooldown="animation.cooldown"
-                      :autoplay="autoPlay"
+                      :paused="paused"
               />
             </div>
           </template>
@@ -86,12 +91,8 @@
                 <Sprite v-if="sprite" :sprite="sprite" :size="32" :zoom="3 * zoom"
                         :row="animation.row"
                         :speed="slowMode ? animation.slowSpeed : animation.speed"
-                        :frames="animation.frames" :flipped="animation.flipped"
-                        :cooldown="animation.cooldown"
-                        @done="nextSubAnimation"
-                        :autoplay="autoPlay"
-                        :fixed-frame="autoPlay ? null : previewFrame"
-                        @newFrame="(newFrame) => currentFrame = newFrame"
+                        :flipped="animation.flipped"
+                        :frame="currentFrame"
                 />
               </div>
             </div>
@@ -99,12 +100,8 @@
               <div class="flex items-center justify-center">
                 <Sprite v-if="weaponSprite && showWeapon" :sprite="weaponSprite" :offset-x="16" :offset-y="10"
                         :size="48" :zoom="3 * zoom" :row="animation.row"
-                        :speed="slowMode ? animation.slowSpeed : animation.speed"
-                        :frames="animation.frames"
                         :flipped="animation.flipped"
-                        :cooldown="animation.cooldown"
-                        :autoplay="autoPlay"
-                        :fixed-frame="autoPlay ? null : previewFrame"
+                        :frame="currentFrame"
                 />
               </div>
             </div>
@@ -133,25 +130,21 @@
 </template>
 
 <script setup>
-import {computed, onMounted, ref, watch, nextTick} from 'vue'
+import {computed, nextTick, onMounted, ref, watch} from 'vue'
 import Sprite from "./Sprite.vue";
 import _ from 'lodash';
 import GridOutline from '@vicons/ionicons5/GridOutline'
 import Person from '@vicons/carbon/Person'
 import Cross from '@vicons/tabler/Cross'
-import Play from '@vicons/carbon/Play'
-import Pause from '@vicons/carbon/Pause'
-import Previous20Regular from '@vicons/fluent/Previous20Regular'
-import Next20Regular from '@vicons/fluent/Next20Regular'
 import AnimalRabbit20Regular from '@vicons/fluent/AnimalRabbit20Regular'
 import AnimalTurtle20Regular from '@vicons/fluent/AnimalTurtle20Regular'
+import FrameControls from "./FrameControls.vue";
 
 const props = defineProps(['sprite', 'weaponSprite'])
-const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon', 'update:slowMode', 'update:gridMode'])
+const emit = defineEmits(['update:animation', 'update:zoom', 'update:showWeapon', 'update:slowMode', 'update:gridMode', 'update:frame', 'update:subAnimation'])
 
-const autoPlay = ref(true);
-const previewFrame = ref(0);
-const currentFrame = ref(1);
+const currentFrame = ref(0);
+const paused = ref(false);
 const showAnimator = ref(false);
 const inputValue = ref('');
 const slowMode = ref(false);
@@ -171,9 +164,19 @@ const animationOptions = ref([
   {label: "Idle left", value: 'idl_left'},
 ])
 
-if(props.sprite) {
-  animationOptions.value.push({label: "Turn around", value: "wlk_down,wlk_down,wlk_right,wlk_right,wlk_up,wlk_up,wlk_left,wlk_left"});
-}
+animationOptions.value.push({label: "Turn around", value: "wlk_down,wlk_down,wlk_right,wlk_right,wlk_up,wlk_up,wlk_left,wlk_left"});
+
+watch(() => props.sprite, () => {
+  if(props.sprite) {
+    if(!_.findIndex(animationOptions.value, {label: "Turn around"})) {
+      alert('test');
+      animationOptions.value.push({
+        label: "Turn around",
+        value: "wlk_down,wlk_down,wlk_right,wlk_right,wlk_up,wlk_up,wlk_left,wlk_left"
+      });
+    }
+  }
+})
 
 const animations = {
   atk_right: {row: 0, speed: 50, slowSpeed: 200, frames: 5, cooldown: 600},
@@ -264,17 +267,8 @@ function nextSubAnimation() {
   }
 }
 
-function setNextFrame() {
-  autoPlay.value = false;
-  previewFrame.value = (previewFrame.value + 1) % animation.value.frames;
-}
-
-function setPreviousFrame() {
-  autoPlay.value = false;
-  previewFrame.value = (previewFrame.value - 1) % animation.value.frames;
-  if(previewFrame.value < 0) {
-    previewFrame.value = animation.value.frames - 1;
-  }
+function setPaused(isPaused) {
+  paused.value = isPaused;
 }
 
 const gridMode = ref(false);
@@ -291,38 +285,27 @@ watch(selectedAnimation, (value) => {
     let animationChain = value.map((animation) => {
       return animations[animation];
     });
-    emit('update:animation', animationChain);
+    emit('update:animation', _.cloneDeep(animationChain));
   } else {
-    emit('update:animation', animations[value]);
+    emit('update:animation', _.cloneDeep(animations[value]));
   }
 }, {immediate: true})
 
 watch(zoom, (value) => {
-  emit('update:zoom', value);
+  emit('update:zoom', zoom.value);
 }, {immediate: true})
 
 watch(showWeapon, (value) => {
-  emit('update:showWeapon', value);
+  emit('update:showWeapon', showWeapon.value);
 }, {immediate: true})
 
 watch(slowMode, (value) => {
-  emit('update:slowMode', value);
+  emit('update:slowMode', slowMode.value);
 }, {immediate: true})
 
 watch(gridMode, (value) => {
-  emit('update:gridMode', value);
+  emit('update:gridMode', gridMode.value);
 }, {immediate: true})
-
-function disableAutoPlay() {
-  if(previewFrame.value > animation.value.frames -1) {
-    previewFrame.value = 0;
-  }
-  autoPlay.value = false;
-}
-
-function enableAutoPlay() {
-  autoPlay.value = true;
-}
 
 function openAnimator() {
   newAnimation.value = {};
@@ -334,17 +317,22 @@ watch(animationSelectorRef, (value) => {
   if (value) nextTick(() => value.focus())
 })
 
+watch(subAnimationIndex, () => {
+  emit('update:subAnimation', subAnimationIndex.value);
+});
+
+watch(currentFrame, () => {
+  emit('update:frame', currentFrame.value);
+})
+
 function addNewAnimation() {
   // Loop over newAnimation.value.value, lookup element by label and get value
   let animationChain = newAnimation.value.value.map((selectedAnimation) => {
-    console.log(selectedAnimation)
     let animationIndex = _.findIndex(animationOptions.value, { label: selectedAnimation });
-    console.log(animationIndex);
     return animationOptions.value[animationIndex].value
   });
 
   newAnimation.value.value = animationChain.join(',');
-  console.log(newAnimation.value);
   animationOptions.value.push(_.cloneDeep(newAnimation.value));
   selectedAnimation.value = newAnimation.value.value;
   newAnimation.value = {}
