@@ -9,7 +9,10 @@ import {computed, onMounted, ref, watch} from "vue";
 
 const props = defineProps({
   sprite: {type: String, required: true},
-  size: {type: Number, required: true},
+  size: {type: Number, required: false},
+  width: {type: Number, required: false},
+  height: {type: Number, required: false},
+
   zoom: {type: Number, required: true},
   row: {type: Number, required: true},
   offsetX: {type: Number, required: null},
@@ -21,6 +24,17 @@ const props = defineProps({
   cooldown: {type: Number, required: null, default: null},
   paused: {type: Boolean, required: null, default: false},
 });
+
+const dimensions = computed(() => {
+  if( props.size ) {
+    return {width: props.size, height: props.size};
+  }
+
+  return {
+    width: props.width,
+    height: props.height,
+  }
+})
 
 const innerFrame = ref(0);
 let frameTimer = null
@@ -77,12 +91,12 @@ const style = computed(() => {
 
   return {
     backgroundImage: 'url(' + props.sprite + ')',
-    width: props.size + 'px',
-    height: props.size + 'px',
+    width: dimensions.value.width + 'px',
+    height: dimensions.value.height + 'px',
     overflow: 'hidden',
     scale: props.zoom,
-    backgroundPositionX: (renderFrame * props.size * -1) + 'px',
-    backgroundPositionY: (props.row * props.size * -1) + 'px'
+    backgroundPositionX: (renderFrame * dimensions.value.width * -1) + 'px',
+    backgroundPositionY: (props.row * dimensions.value.height * -1) + 'px'
   }
 })
 

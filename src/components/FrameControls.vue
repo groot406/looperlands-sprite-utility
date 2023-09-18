@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-row text-white text-lg p-1 flex-grow w-full items-center justify-center gap-x-2">
+  <div class="flex flex-row text-white text-lg p-1 flex-grow w-full items-center justify-center gap-x-2 ">
     <n-icon v-if="allowFrameStepper" class="opacity-50 hover:opacity-100 cursor-pointer" :component="Previous20Regular"
             @click="setPreviousFrame"></n-icon>
     <n-icon v-if="!paused" class="hover:opacity-100 cursor-pointer opacity-50" :component="Pause"
