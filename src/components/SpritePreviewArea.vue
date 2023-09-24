@@ -78,7 +78,7 @@
       </div>
     </div>
     <template v-if="!sprite && !weaponSprite && !customSprite">
-      <div class="text-4xl w-full text-center text-slate-400 mt-40">No spite was uploaded yet</div>
+      <div class="text-4xl w-full text-center text-slate-400 mt-40">No sprite was uploaded yet</div>
     </template>
     <template v-else>
       <div v-if="gridMode === true" class="absolute w-full h-[calc(100%-150px)] top-[100px] pointer-events-none" id="preview">
