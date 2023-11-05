@@ -286,8 +286,11 @@ function downloadPng() {
 
   htmlToImage.toPng(document.getElementById('preview'))
       .then(function (dataUrl) {
-        download(dataUrl);
-        exporting.value = false;
+        htmlToImage.toPng(document.getElementById('preview'))
+            .then(function (dataUrl) {
+              download(dataUrl);
+              exporting.value = false;
+            });
       });
 
 }
@@ -365,11 +368,17 @@ async function exportZip() {
           width: 160,
           height: 288
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          file1 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_character_1'), {
+            pixelRatio: 1,
+            width: 160,
+            height: 288
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            file1 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_character_2'), {
@@ -377,11 +386,17 @@ async function exportZip() {
           width: 320,
           height: 576
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          file2 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_character_2'), {
+            pixelRatio: 1,
+            width: 320,
+            height: 576
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            file2 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_character_3'), {
@@ -389,11 +404,17 @@ async function exportZip() {
           width: 480,
           height: 864
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          file3 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_character_3'), {
+            pixelRatio: 1,
+            width: 480,
+            height: 864
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            file3 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_character_picker'), {
@@ -401,11 +422,17 @@ async function exportZip() {
           width: 600,
           height: 600
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          picker = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_character_picker'), {
+            pixelRatio: 1,
+            width: 600,
+            height: 600
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            picker = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
       }
 
@@ -415,11 +442,17 @@ async function exportZip() {
           width: 240,
           height: 432
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          weaponFile1 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_weapon_1'), {
+            pixelRatio: 1,
+            width: 240,
+            height: 432
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            weaponFile1 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_weapon_2'), {
@@ -427,11 +460,17 @@ async function exportZip() {
           width: 480,
           height: 864
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          weaponFile2 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_weapon_2'), {
+            pixelRatio: 1,
+            width: 480,
+            height: 864
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            weaponFile2 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_weapon_3'), {
@@ -439,11 +478,17 @@ async function exportZip() {
           width: 720,
           height: 1296
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          weaponFile3 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_weapon_3'), {
+            pixelRatio: 1,
+            width: 720,
+            height: 1296
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            weaponFile3 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_weapon_picker'), {
@@ -451,11 +496,17 @@ async function exportZip() {
           width: 600,
           height: 600
         }).then(function (blob) {
-          exportedImages++;
-          weaponPicker = blob;
-          if (exportedImages === exportTarget) {
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
-          }
+          htmlToImage.toBlob(document.getElementById('export_weapon_picker'), {
+            pixelRatio: 1,
+            width: 600,
+            height: 600
+          }).then(function (blob) {
+            exportedImages++;
+            weaponPicker = blob;
+            if (exportedImages === exportTarget) {
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+            }
+          });
         });
       }
 
@@ -465,11 +516,17 @@ async function exportZip() {
           width: customSpriteSettings.value.frameSize.width * customCurrentAnimation.value.frames,
           height: customSpriteSettings.value.frameSize.height
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          customFile1 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_custom_1'), {
+            pixelRatio: 1,
+            width: customSpriteSettings.value.frameSize.width * customCurrentAnimation.value.frames,
+            height: customSpriteSettings.value.frameSize.height
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            customFile1 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_custom_2'), {
@@ -477,11 +534,17 @@ async function exportZip() {
           width: customSpriteSettings.value.frameSize.width * customCurrentAnimation.value.frames * 2,
           height: customSpriteSettings.value.frameSize.height * 2
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          customFile2 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_custom_2'), {
+            pixelRatio: 1,
+            width: customSpriteSettings.value.frameSize.width * customCurrentAnimation.value.frames * 2,
+            height: customSpriteSettings.value.frameSize.height * 2
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            customFile2 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
 
         htmlToImage.toBlob(document.getElementById('export_custom_3'), {
@@ -489,11 +552,17 @@ async function exportZip() {
           width: customSpriteSettings.value.frameSize.width * customCurrentAnimation.value.frames * 3,
           height: customSpriteSettings.value.frameSize.height * 3
         }).then(function (blob) {
-          exporting.value = false;
-          exportedImages++;
-          customFile3 = blob;
-          if (exportedImages === exportTarget)
-            generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          htmlToImage.toBlob(document.getElementById('export_custom_3'), {
+            pixelRatio: 1,
+            width: customSpriteSettings.value.frameSize.width * customCurrentAnimation.value.frames * 3,
+            height: customSpriteSettings.value.frameSize.height * 3
+          }).then(function (blob) {
+            exporting.value = false;
+            exportedImages++;
+            customFile3 = blob;
+            if (exportedImages === exportTarget)
+              generateZip(file1, file2, file3, picker, weaponFile1, weaponFile2, weaponFile3, weaponPicker, customFile1, customFile2, customFile3);
+          });
         });
       }
 
@@ -573,7 +642,7 @@ function downloadGif() {
     subAnimations.value = [currentAnimation.value];
   }
 
-  let totalTime = 0;
+  let totalTime = 500;
 
   for (let a = 0; a < Object.keys(subAnimations.value).length; a++) {
 
@@ -612,11 +681,18 @@ function addFrame(delay) {
     height: 384
   })
       .then((canvas) => {
-        let options = {copy: true}
-        if (delay) {
-          options.delay = delay;
-        }
-        encoder.addFrame(canvas, options)
+        htmlToImage.toCanvas(document.getElementById('gifExport'), {
+          pixelRatio: 1,
+          width: 384,
+          height: 384
+        })
+            .then((canvas) => {
+              let options = {copy: true}
+              if (delay) {
+                options.delay = delay;
+              }
+              encoder.addFrame(canvas, options)
+            })
       })
 }
 
@@ -686,8 +762,11 @@ function downloadTilesheet() {
   setTimeout(() => {
     htmlToImage.toPng(document.getElementById('tilesheetExport'), {pixelRatio: 1})
         .then(function (dataUrl) {
-          download(dataUrl);
-          exportingTilesheetTotal.value = false;
+          htmlToImage.toPng(document.getElementById('tilesheetExport'), {pixelRatio: 1})
+              .then(function (dataUrl) {
+                download(dataUrl, 'tilesheet.png');
+                exportingTilesheetTotal.value = false;
+              });
         });
   }, 100)
 }
