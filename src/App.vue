@@ -32,6 +32,7 @@
         class="p-1 border rounded-full px-4 text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
         @click="downloadPng">Save as Png
     </div>
+    <div class="p-1 border rounded-full px-4 text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer" @click="downloadAsWeaponSheet">Download weapon alignment template</div>
     <div v-if="!gridMode && (droppedSprite || weaponSprite)"
          class="p-1 border flex items-center gap-x-2 rounded-full text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
          :class="{'px-4': !exportingGifTotal, 'px-2': exportingGifTotal }"
@@ -207,6 +208,16 @@
       </div>
     </n-modal>
   </teleport>
+  <div id="avatarAsWeaponSheet" v-if="exportingAvatarAsWeapon" class="sprite relative pointer-events-none flex flex-col w-[240px] h-[432px] overflow-hidden">
+    <div class="flex flex-row" v-for="row in 9">
+      <div class="flex flex-row p-[8px]" v-for="col in 5">
+        <Sprite :sprite="droppedSprite" :size="32" :zoom="1"
+                :row="row -1"
+                :frame="col -1"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -251,6 +262,7 @@ const currentCustomFrame = ref(0);
 const customSpriteSettings = ref({})
 
 const exportingTilesheetTotal = ref(false);
+const exportingAvatarAsWeapon = ref(false);
 const showTilesheetExport = ref(false);
 const tilesheetOptions = ref({
   sprite: null,
@@ -717,6 +729,13 @@ const tilesheetOutput = computed(() => {
     return {};
   }
 
+  console.log({
+    sprite: (tilesheetOptions.value.sprite === 'character') ? droppedSprite.value : (tilesheetOptions.value.sprite === 'weapon') ? weaponSprite.value : customSprite.value,
+    tiles_per_column_frame: Math.ceil(framesize.width / tilesheetOptions.value.tilesize),
+    tiles_per_row_frame: Math.ceil(framesize.height / tilesheetOptions.value.tilesize),
+    total_frames: customCurrentAnimation.value.frames
+  })
+
   return {
     sprite: (tilesheetOptions.value.sprite === 'character') ? droppedSprite.value : (tilesheetOptions.value.sprite === 'weapon') ? weaponSprite.value : customSprite.value,
     tiles_per_column_frame: Math.ceil(framesize.width / tilesheetOptions.value.tilesize),
@@ -766,6 +785,20 @@ function downloadTilesheet() {
               .then(function (dataUrl) {
                 download(dataUrl, 'tilesheet.png');
                 exportingTilesheetTotal.value = false;
+              });
+        });
+  }, 100)
+}
+
+function downloadAsWeaponSheet() {
+  exportingAvatarAsWeapon.value = true;
+  setTimeout(() => {
+    htmlToImage.toPng(document.getElementById('avatarAsWeaponSheet'), {pixelRatio: 1})
+        .then(function (dataUrl) {
+          htmlToImage.toPng(document.getElementById('avatarAsWeaponSheet'), {pixelRatio: 1})
+              .then(function (dataUrl) {
+                download(dataUrl, 'alignment.png');
+                exportingAvatarAsWeapon.value = false;
               });
         });
   }, 100)
