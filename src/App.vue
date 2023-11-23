@@ -32,7 +32,7 @@
         class="p-1 border rounded-full px-4 text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
         @click="downloadPng">Save as Png
     </div>
-    <div class="p-1 border rounded-full px-4 text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer" @click="downloadAsWeaponSheet">Download weapon alignment template</div>
+    <div class="p-1 border rounded-full px-4 text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer" @click="downloadAsWeaponSheet">Download avatar as weapon-sheet</div>
     <div v-if="!gridMode && (droppedSprite || weaponSprite)"
          class="p-1 border flex items-center gap-x-2 rounded-full text-xs text-slate-200 border-slate-400 opacity-50 hover:opacity-100 cursor-pointer"
          :class="{'px-4': !exportingGifTotal, 'px-2': exportingGifTotal }"
